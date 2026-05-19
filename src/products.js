@@ -64,7 +64,10 @@ const products = [
     dimensions:"Dimensions",
     dDes:"Width: 56 cm, Depth: 55 cm, Height: 78 cm, Seat Height: 46 cm",
     images: [img2],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "creme"
+
   },
   {
     id: 2,
@@ -77,196 +80,252 @@ const products = [
     dimensions:"Dimensions",
     dDes:"Width: 56 cm, Depth: 55 cm, Height: 78 cm, Seat Height: 46 cm",
     images: [img3],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "creme"
   },
   {
     id: 3,
     name: "Feânor",
     description: "Handcrafted solid wood construction",
     images: [img4],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "creme"
   },
   {
     id: 4,
     name: "Harmony",
     description: "Handcrafted solid wood construction",
     images: [img5],
-    category: "chairs"
+    category: "chairs",
+     frame: "oak",
+    color: "creme"
   },
   {
     id: 5,
     name: "Snake",
     description: "Handcrafted solid wood construction",
     images: [img6],
-    category: "chairs"
+    category: "chairs",
+     frame: "oak",
+    color: "creme"
   },
   {
     id: 6,
     name: "Snake Bar",
     description: "Handcrafted solid wood construction",
     images: [img7],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "brown"
   },
   {
     id: 7,
     name: "Siena",
     description: "Handcrafted solid wood construction",
     images: [img8],
-    category: "chairs"
+    category: "chairs",
+     frame: "oak",
+    color: "brown"
   },
   {
     id: 8,
     name: "Zenith",
     description: "Handcrafted solid wood construction",
     images: [img9],
-    category: "chairs"
+    category: "chairs",
+     frame: "oak",
+    color: "brown"
   },
   {
     id: 9,
     name: "Kimera",
     description: "Handcrafted solid wood construction",
     images: [img10],
-    category: "chairs"
+    category: "chairs",
+     frame: "oak",
+    color: "brown"
   },
   {
     id: 10,
     name: "Kimera Bar",
     description: "Handcrafted solid wood construction",
     images: [img11],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "brown"
   },
   {
     id: 11,
     name: "Beyonce",
     description: "Handcrafted solid wood construction",
     images: [img12],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "brown"
   },
   {
     id: 12,
     name: "Whiskey",
     description: "Handcrafted solid wood construction",
     images: [img13],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 13,
     name: "Paris Arm",
     description: "Handcrafted solid wood construction",
     images: [img14],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 14,
     name: "Leonardo",
     description: "Handcrafted solid wood construction",
     images: [img15],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 15,
     name: "Soho",
     description: "Handcrafted solid wood construction",
     images: [img16],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 16,
     name: "Soho Bar",
     description: "Handcrafted solid wood construction",
     images: [img17],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 17,
     name: "Stark",
     description: "Handcrafted solid wood construction",
     images: [img18],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 18,
     name: "Adar",
     description: "Handcrafted solid wood construction",
     images: [img19],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 19,
     name: "Caretta",
     description: "Handcrafted solid wood construction",
     images: [img20],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 20,
     name: "Dream",
     description: "Handcrafted solid wood construction",
     images: [img21],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "dark brown"
   },
   {
     id: 21,
     name: "Karan",
     description: "Handcrafted solid wood construction",
     images: [img22],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 22,
     name: "Missina",
     description: "Handcrafted solid wood construction",
     images: [img23],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 23,
     name: "Vegas Kare",
     description: "Handcrafted solid wood construction",
     images: [img24],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 24,
     name: "Vegas",
     description: "Handcrafted solid wood construction",
     images: [img25],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 25,
     name: "Panela Arm",
     description: "Handcrafted solid wood construction",
     images: [img26],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 26,
     name: "Panela",
     description: "Handcrafted solid wood construction",
     images: [img27],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 27,
     name: "Fade",
     description: "Handcrafted solid wood construction",
     images: [img28],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 28,
     name: "Notre",
     description: "Handcrafted solid wood construction",
     images: [img29],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 29,
     name: "Patta",
     description: "Handcrafted solid wood construction",
     images: [img30],
-    category: "chairs"
+    category: "chairs",
+    frame: "oak",
+    color: "navy"
   },
   {
     id: 30,
@@ -280,84 +339,108 @@ const products = [
     name: "Lunda Sofa",
     description: "Handcrafted solid wood construction",
     images: [img32],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 32,
     name: "Tofu Sofa",
     description: "Handcrafted solid wood construction",
     images: [img33],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 33,
     name: "Elf Sofa",
     description: "Handcrafted solid wood construction",
     images: [img34],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 34,
     name: "Rivano Sofa",
     description: "Handcrafted solid wood construction",
     images: [img35],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 35,
     name: "Gala Sofa",
     description: "Handcrafted solid wood construction",
     images: [img36],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 36,
     name: "Sasa Sofa",
     description: "Handcrafted solid wood construction",
     images: [img37],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 37,
     name: "Puma Sofa",
     description: "Handcrafted solid wood construction",
     images: [img38],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 38,
     name: "Napolyon Sofa",
     description: "Handcrafted solid wood construction",
     images: [img39],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 39,
     name: "Luffy Sofa",
     description: "Handcrafted solid wood construction",
     images: [img40],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 40,
     name: "Catre Sofa",
     description: "Handcrafted solid wood construction",
     images: [img41],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 41,
     name: "Saha Sofa",
     description: "Handcrafted solid wood construction",
     images: [img42],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 42,
     name: "Pardon Sofa",
     description: "Handcrafted solid wood construction",
     images: [img43],
-    category: "sofas"
+    category: "sofas",
+    frame: "oak",
+    color: "green"
   },
   {
     id: 43,
