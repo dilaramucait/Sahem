@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import PRODUCTS from "./products";
 import logo from "./images/unnamed.png";
-import heading from "./images/background.jpg";
 const CATEGORIES = ["All", "Chairs", "Sofas", "Benches"];
 const MATERIALS  = ["All", "Birch", "Oak", "Ash", "Beech", "Pine", "Walnut", "Rattan", "Marble"];
 const SORT_OPT   = ["Featured", "Name A–Z", "Category"];
