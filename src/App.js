@@ -81,6 +81,18 @@ function FurnitureArt({ category, material, size = "small" }) {
   const bg = size === "large" ? "#EFEBE3" : "#F7F5F0";
   const vb = size === "large" ? "0 0 480 360" : "0 0 240 180";
   const s = size === "large" ? 2 : 1;
+
+  return (
+    <svg viewBox={vb} role="img" aria-label={`${material} ${category}`} style={{ display: "block", width: "100%", height: "auto", background: bg }}>
+      <g transform={`scale(${s})`}>
+        <ellipse cx="120" cy="150" rx="74" ry="12" fill="rgba(44,44,44,0.08)" />
+        <rect x="68" y="72" width="104" height="54" rx="4" fill={tone} stroke="#8C7355" strokeWidth="2" />
+        <rect x="76" y="56" width="88" height="28" rx="14" fill="#FFFFFF" opacity="0.35" />
+        <path d="M72 126h96l-14 26H86z" fill={tone} stroke="#8C7355" strokeWidth="2" />
+        <path d="M86 152v22M154 152v22" stroke="#5D4635" strokeWidth="5" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
 }
 
   
