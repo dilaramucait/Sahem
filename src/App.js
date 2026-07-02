@@ -5,6 +5,7 @@ const CATEGORIES = ["All", "Chairs", "Sofas", "Benches"];
 const MATERIALS  = ["All", "Birch", "Oak", "Ash", "Beech", "Pine", "Walnut", "Rattan", "Marble"];
 const SORT_OPT   = ["Featured", "Name A–Z", "Category"];
 
+
 const WOOD_TONES = {
   Birch: "#D4C5A9", Oak: "#C4A882", Ash: "#B8A99A",
   Beech: "#C9B99A", Pine: "#C6A87A", Walnut: "#8B6347",
@@ -13,6 +14,65 @@ const WOOD_TONES = {
 function swatch(material) {
   for (const [k, v] of Object.entries(WOOD_TONES)) if (material.includes(k)) return v;
   return "#B8A99A";
+}
+
+/* ── Global responsive rules ──
+   Inline styles win over normal stylesheet rules, so the mobile
+   overrides below use !important to take priority at each breakpoint.
+   This lets every page keep its desktop inline styles unchanged. */
+function GlobalStyles() {
+  return (
+    <style>{`
+      @media (max-width: 900px) {
+        .sh-layout { flex-direction: column !important; }
+        .sh-sidebar {
+          width: 100% !important;
+          box-sizing: border-box !important;
+          position: static !important;
+          border-right: none !important;
+          border-bottom: 1px solid #E8E2D9 !important;
+          min-height: auto !important;
+        }
+        .sh-detail-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+        .sh-related-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      }
+
+      @media (max-width: 640px) {
+        .sh-nav-cat {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          height: auto !important;
+          padding: 16px 20px !important;
+          gap: 12px !important;
+        }
+        .sh-nav-links {
+          padding-left: 0 !important;
+          gap: 18px !important;
+          flex-wrap: wrap !important;
+          width: 100% !important;
+        }
+        .sh-nav-spacer { display: none !important; }
+
+        .sh-detail-nav { padding: 0 20px !important; gap: 8px !important; }
+        .sh-detail-nav-back span:last-child { display: none; }
+
+        .sh-hero { padding: 56px 20px 36px !important; }
+
+        .sh-content-padding { padding: 36px 20px !important; }
+        .sh-main-padding { padding: 20px 16px !important; }
+
+        .sh-product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 12px !important; }
+        .sh-related-grid { grid-template-columns: 1fr !important; }
+
+        .sh-footer {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 6px !important;
+          padding: 20px !important;
+        }
+      }
+    `}</style>
+  );
 }
 
 /* ── Furniture illustrations ── */
@@ -50,7 +110,7 @@ function Tag({ label }) {
   );
 }
 
-/* ── Product card (no price, "See more" CTA) ── */
+/* ── Product card── */
 function ProductCard({ product, onOpen }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -79,6 +139,8 @@ function ProductCard({ product, onOpen }) {
               style={{
                 width: 220,
                 height: 220,
+                maxWidth: "80%",
+                maxHeight: "80%",
                 objectFit: "contain",
                 position: "absolute",
                 top: "50%",
@@ -150,9 +212,10 @@ function DetailPage({ product, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <GlobalStyles />
 
       {/* Nav */}
-      <nav style={{
+      <nav className="sh-detail-nav" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 48px", height: 60, borderBottom: "1px solid #E8E2D9",
         position: "sticky", top: 0,
@@ -164,29 +227,31 @@ function DetailPage({ product, onBack }) {
           style={{
           height: 60, 
           width: "auto",
+          maxWidth: "40vw",
           display: "block",
           }}/>
         <button
           onClick={onBack}
+          className="sh-detail-nav-back"
           style={{
             background: "transparent", border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", gap: 8,
             fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
             color: "#B8AFA2", fontFamily: "'DM Sans', sans-serif",
-            padding: 0, transition: "color 0.15s",
+            padding: 0, transition: "color 0.15s", whiteSpace: "nowrap",
           }}
           onMouseEnter={e => e.currentTarget.style.color = "#2C2C2C"}
           onMouseLeave={e => e.currentTarget.style.color = "#B8AFA2"}
         >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>←</span> Back to catalogue
+          <span style={{ fontSize: 16, lineHeight: 1 }}>←</span> <span>Back to catalogue</span>
         </button>
       </nav>
 
       {/* Content */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 48px" }}>
+      <div className="sh-content-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 48px" }}>
 
         {/* Top section: illustration + info */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "start", marginBottom: 80 }}>
+        <div className="sh-detail-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "start", marginBottom: 80 }}>
 
           {/* Left: large illustration + view switcher */}
           <div>
@@ -262,7 +327,7 @@ function DetailPage({ product, onBack }) {
                 <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 12 }}>
                   Dimensions
                 </div>
-                <div style={{ display: "flex", gap: 24 }}>
+                <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                   {[["Width", product.w], ["Height", product.h], ["Depth", product.d]].map(([l, v]) => (
                     <div key={l}>
                       <div style={{ fontSize: 20, fontFamily: "'DM Serif Display', serif", color: "#2C2C2C" }}>{v}<span style={{ fontSize: 12, marginLeft: 2 }}>cm</span></div>
@@ -327,7 +392,7 @@ function DetailPage({ product, onBack }) {
               Also in {product.category}
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="sh-related-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3).map(p => (
               <ProductCard key={p.id} product={p} onOpen={onBack_then => {}} />
             ))}
@@ -335,7 +400,7 @@ function DetailPage({ product, onBack }) {
         </div>
       </div>
 
-      <footer style={{
+      <footer className="sh-footer" style={{
         borderTop: "1px solid #E8E2D9", padding: "28px 48px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         fontSize: 11, letterSpacing: "0.08em", color: "#B8AFA2", textTransform: "uppercase",
@@ -385,9 +450,10 @@ function CataloguePage({ onOpen }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <GlobalStyles />
 
       {/* NAV */}
-      <nav style={{
+      <nav className="sh-nav-cat" style={{
         display: "flex", alignItems: "center", justifyContent: "flex-start",
         padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
         position: "sticky", top: 0,
@@ -399,9 +465,10 @@ function CataloguePage({ onOpen }) {
           style={{
           height: 70,//change 
           width: "auto",
+          maxWidth: "60vw",
           display: "block",
           }}/>
-        <div style={{ display: "flex", gap: 36, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", justifyContent:"flex-start", paddingLeft:"50px" }}>
+        <div className="sh-nav-links" style={{ display: "flex", gap: 36, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", justifyContent:"flex-start", paddingLeft:"50px" }}>
           {["Catalogue", "Materials", "About", "Contact"].map(item => (
             <span key={item} style={{
               cursor: "pointer",
@@ -417,11 +484,12 @@ function CataloguePage({ onOpen }) {
             </span>
           ))}
         </div>
-        <div style={{ width: 80 }} />
+        <div className="sh-nav-spacer" style={{ width: 80 }} />
       </nav>
 
       {/* HERO */}
       <div
+        className="sh-hero"
         style={{
           padding: "100px 48px 56px",
           borderBottom: "1px solid #E8E2D9",
@@ -446,9 +514,9 @@ function CataloguePage({ onOpen }) {
     <h1
       style={{
         fontFamily: "'Playfair Display', serif",
-        fontSize: 80,
+        fontSize: "clamp(38px, 9vw, 80px)",
         fontWeight: 400,
-        lineHeight: 1.2,
+        lineHeight: 1.15,
         margin: "0 0 20px",
       }}
     >
@@ -470,9 +538,9 @@ function CataloguePage({ onOpen }) {
 </div>
 
       {/* LAYOUT */}
-      <div style={{ display: "flex" }}>
+      <div className="sh-layout" style={{ display: "flex" }}>
         {/* SIDEBAR */}
-        <aside style={{
+        <aside className="sh-sidebar" style={{
           width: 220, flexShrink: 0, padding: "32px 28px",
           borderRight: "1px solid #E8E2D9",
           minHeight: "calc(100vh - 60px)",
@@ -483,7 +551,7 @@ function CataloguePage({ onOpen }) {
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search…"
             style={{
-              width: "100%", boxSizing: "border-box",
+              width: "160px", boxSizing: "border-box",
               background: "#FFFFFF", border: "1px solid #E8E2D9",
               fontSize: 13, padding: "8px 12px", outline: "none",
               fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C",
@@ -510,12 +578,12 @@ function CataloguePage({ onOpen }) {
         </aside>
 
         {/* MAIN */}
-        <main style={{ flex: 1, padding: "28px 36px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <main className="sh-main-padding" style={{ flex: 1, padding: "28px 36px", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
             <span style={{ fontSize: 12, color: "#B8AFA2" }}>
               <span style={{ color: "#2C2C2C" }}>{filtered.length}</span> pieces
             </span>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {SORT_OPT.map(opt => (
                 <button key={opt} onClick={() => setSortBy(opt)} style={pillStyle(sortBy === opt)}>{opt}</button>
               ))}
@@ -527,14 +595,14 @@ function CataloguePage({ onOpen }) {
               No pieces match your filters.
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+            <div className="sh-product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
               {filtered.map(p => <ProductCard key={p.id} product={p} onOpen={onOpen} />)}
             </div>
           )}
         </main>
       </div>
 
-      <footer style={{
+      <footer className="sh-footer" style={{
         borderTop: "1px solid #E8E2D9", padding: "28px 48px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         fontSize: 11, letterSpacing: "0.08em", color: "#B8AFA2", textTransform: "uppercase",
