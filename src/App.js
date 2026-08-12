@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import PRODUCTS from "./products";
 import logo from "./images/unnamed.png";
+import naturalOak from "./images/Natural Oak.png";
+import naturalBeech from "./images/Natural Beech.png";
+import tobaccoOak from "./images/Tobacco Oak.png";
 const CATEGORIES = ["All", "Chairs", "Sofas", "Benches"];
-const MATERIALS  = ["All", "Birch", "Oak", "Ash", "Beech", "Pine", "Walnut", "Rattan", "Marble"];
 const SORT_OPT   = ["Featured", "Name A–Z", "Category"];
 
 
@@ -410,7 +412,7 @@ function FilterLabel({ children }) {
 }
 
 /* ── Main catalogue page ── */
-function CataloguePage({ onOpen }) {
+function CataloguePage({ onOpen, onNavigate }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeMaterial, setActiveMaterial] = useState("All");
   const [sortBy, setSortBy] = useState("Featured");
@@ -457,14 +459,22 @@ function CataloguePage({ onOpen }) {
           display: "block",
           }}/>
         <div className="sh-nav-links" style={{ display: "flex", gap: 36, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", justifyContent:"flex-start", paddingLeft:"50px" }}>
-          {["Catalogue", "Materials", "About", "Contact"].map(item => (
-            <span key={item} style={{
-              cursor: "pointer",
-              color: item === "Catalogue" ? "#8C7355" : "#B8AFA2",
-              transition: "color 0.18s",
-              borderBottom: item === "Catalogue" ? "1px solid #8C7355" : "1px solid transparent",
-              paddingBottom: 2,
-            }}
+          {["Catalogue", "Gallery", "About", "Contact"].map(item => (
+            <span
+              key={item}
+              onClick={() => {
+                if (item === "Catalogue") onNavigate("catalogue");
+                if (item === "Gallery") onNavigate("gallery");
+                if (item === "About") onNavigate("about");
+                if (item === "Contact") onNavigate("contact");
+              }}
+              style={{
+                cursor: "pointer",
+                color: item === "Catalogue" ? "#8C7355" : "#B8AFA2",
+                transition: "color 0.18s",
+                borderBottom: item === "Catalogue" ? "1px solid #8C7355" : "1px solid transparent",
+                paddingBottom: 2,
+              }}
               onMouseEnter={e => e.currentTarget.style.color = "#2C2C2C"}
               onMouseLeave={e => e.currentTarget.style.color = item === "Catalogue" ? "#8C7355" : "#B8AFA2"}
             >
@@ -554,15 +564,6 @@ function CataloguePage({ onOpen }) {
               transition: "color 0.15s",
             }}>{cat}</div>
           ))}
-          <FilterLabel>Material</FilterLabel>
-          {MATERIALS.map(mat => (
-            <div key={mat} onClick={() => setActiveMaterial(mat)} style={{
-              fontSize: 13, padding: "6px 0", cursor: "pointer",
-              color: activeMaterial === mat ? "#2C2C2C" : "#B8AFA2",
-              fontWeight: activeMaterial === mat ? 500 : 400,
-              transition: "color 0.15s",
-            }}>{mat}</div>
-          ))}
         </aside>
 
         {/* MAIN */}
@@ -595,19 +596,442 @@ function CataloguePage({ onOpen }) {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         fontSize: 11, letterSpacing: "0.08em", color: "#B8AFA2", textTransform: "uppercase",
       }}>
-        <span>© 2026 Sahem Hromos — Skopje</span>
+        <span>© 2026 Sahem Hromos — Gostivar</span>
         <span>Made slowly. Made to last.</span>
       </footer>
     </div>
   );
 }
 
+function GalleryPage({ onNavigate, onOpen }) {
+  const [hoveredId, setHoveredId] = useState(null);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <GlobalStyles />
+
+      {/* Navbar */}
+      <nav className="sh-nav-cat" style={{
+        display: "flex", alignItems: "center", justifyContent: "flex-start",
+        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
+        position: "sticky", top: 0,
+        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
+      }}>
+        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
+        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
+          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>Gallery</span>
+          <span onClick={() => onNavigate("about")} style={{ cursor: "pointer", color: "#B8AFA2" }}>About</span>
+          <span onClick={() => onNavigate("contact")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Contact</span>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
+          Gallery
+        </div>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
+          A closer look
+        </h1>
+        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 560, marginBottom: 60 }}>
+          Every piece, photographed in the workshop. Click through to see materials,
+          dimensions, and finishes for anything that catches your eye.
+        </p>
+      </div>
+
+      {/* Photo grid */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px" }}>
+        <div
+          className="sh-product-grid"
+          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}
+        >
+          {PRODUCTS.map(p => (
+            <div
+              key={p.id}
+              onMouseEnter={() => setHoveredId(p.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => onOpen(p)}
+              style={{
+                position: "relative", height: 340, background: "#fff",
+                border: "1px solid #E8E2D9", overflow: "hidden", cursor: "pointer",
+              }}
+            >
+              <img
+                src={p.images}
+                alt={p.name}
+                style={{
+                  width: "100%", height: "100%", objectFit: "cover",
+                  transform: hoveredId === p.id ? "scale(1.05)" : "scale(1)",
+                  transition: "transform 0.4s ease",
+                }}
+              />
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to top, rgba(44,44,44,0.75), rgba(44,44,44,0) 50%)",
+                opacity: hoveredId === p.id ? 1 : 0,
+                transition: "opacity 0.25s ease",
+                display: "flex", alignItems: "flex-end", padding: 20,
+              }}>
+                <div>
+                  <div style={{ fontFamily: "'DM Serif Display', serif", color: "#F7F5F0", fontSize: 18, marginBottom: 4 }}>
+                    {p.name}
+                  </div>
+                  <div style={{ color: "#E8E2D9", fontSize: 11, letterSpacing: "0.06em" }}>
+                    {p.category} · {p.material}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <footer className="sh-footer" style={{
+        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
+        display: "flex", justifyContent: "space-between",
+        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
+      }}>
+        <span>© 2026 Sahem Hromos — Gostivar</span>
+        <span>Made slowly. Made to last.</span>
+      </footer>
+    </div>
+  );
+}
+
+function AboutUs({ onNavigate }) {
+  const values = [
+    {
+      title: "Solid Wood, Always",
+      text: "No veneers, no particleboard shortcuts. Every frame is cut from solid oak, beech, walnut, or ash.",
+    },
+    {
+      title: "Made By Hand",
+      text: "Our joinery is done in small batches by craftsmen who've worked the same workshop floor for decades.",
+    },
+    {
+      title: "Built To Outlive Trends",
+      text: "We design for the next twenty years, not the next season. Quiet forms, honest materials.",
+    },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <GlobalStyles />
+
+      {/* Navbar */}
+      <nav className="sh-nav-cat" style={{
+        display: "flex", alignItems: "center", justifyContent: "flex-start",
+        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
+        position: "sticky", top: 0,
+        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
+      }}>
+        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
+        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
+          <span onClick={() => onNavigate("materials")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Materials</span>
+          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>About</span>
+          <span onClick={() => onNavigate("contact")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Contact</span>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
+          About Us
+        </div>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
+          Furniture made the slow way
+        </h1>
+        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 620, marginBottom: 80 }}>
+          Sahem Hromos began as a small joinery workshop between Skopje and Gostivar, built on
+          one idea: furniture should be made from real materials, by real hands, to be used for
+          a lifetime — not replaced every few years. That idea hasn't changed since.
+        </p>
+      </div>
+
+      {/* Story section */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 80px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }} className="sh-detail-grid">
+        <div>
+          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 14 }}>
+            Our Story
+          </div>
+          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9, marginBottom: 20 }}>
+            What started as a two-person workshop has grown into a small team of joiners,
+            upholsterers, and finishers — but the process hasn't changed. Every chair, sofa,
+            and bench still passes through the same hands from rough timber to finished piece.
+          </p>
+          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }}>
+            We work almost entirely with solid regional hardwoods — oak, beech, ash, walnut —
+            and natural upholstery textiles like bouclé and chenille, chosen for how they age,
+            not just how they photograph.
+          </p>
+        </div>
+        <div>
+          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 14 }}>
+            Where We Work
+          </div>
+          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9, marginBottom: 20 }}>
+            Our workshop sits in Gostivar, where frames are cut, joined, and sanded by hand.
+            Final assembly and finishing happen at our Skopje studio, where every piece is
+            checked before it ships.
+          </p>
+          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }}>
+            Because we make in small batches, lead times are longer than mass-produced
+            furniture — usually a few weeks. We think that's a fair trade for something built
+            to last decades.
+          </p>
+        </div>
+      </div>
+
+      {/* Values */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px" }}>
+        <div style={{ borderTop: "1px solid #E8E2D9", paddingTop: 48, marginBottom: 40 }}>
+          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2" }}>
+            What We Believe
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 28 }}>
+          {values.map(v => (
+            <div key={v.title} style={{ background: "#fff", border: "1px solid #E8E2D9", padding: 30 }}>
+              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 20, marginBottom: 14 }}>
+                {v.title}
+              </h2>
+              <p style={{ color: "#666", lineHeight: 1.8, fontSize: 14 }}>
+                {v.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px", textAlign: "center" }}>
+        <button
+          onClick={() => onNavigate("catalogue")}
+          style={{
+            background: "#2C2C2C", border: "none", color: "#F7F5F0",
+            fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase",
+            padding: "16px 40px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+            transition: "background 0.18s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = "#8C7355"}
+          onMouseLeave={e => e.currentTarget.style.background = "#2C2C2C"}
+        >
+          Browse the catalogue
+        </button>
+      </div>
+
+      <footer className="sh-footer" style={{
+        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
+        display: "flex", justifyContent: "space-between",
+        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
+      }}>
+        <span>© 2026 Sahem Hromos — Gostivar</span>
+        <span>Made slowly. Made to last.</span>
+      </footer>
+    </div>
+  );
+}
+
+function ContactUs({ onNavigate }) {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sent, setSent] = useState(false);
+
+  const update = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
+  const inputStyle = {
+    width: "100%", boxSizing: "border-box",
+    background: "#fff", border: "1px solid #E8E2D9",
+    fontSize: 14, padding: "12px 14px", outline: "none",
+    fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C",
+    marginBottom: 20,
+  };
+
+  const label = {
+    fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+    color: "#B8AFA2", marginBottom: 8, display: "block",
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.email || !form.message) return;
+    setSent(true);
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <GlobalStyles />
+
+      {/* Navbar */}
+      <nav className="sh-nav-cat" style={{
+        display: "flex", alignItems: "center", justifyContent: "flex-start",
+        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
+        position: "sticky", top: 0,
+        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
+      }}>
+        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
+        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
+          <span onClick={() => onNavigate("materials")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Materials</span>
+          <span onClick={() => onNavigate("about")} style={{ cursor: "pointer", color: "#B8AFA2" }}>About</span>
+          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>Contact</span>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
+          Get In Touch
+        </div>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
+          Let's talk furniture
+        </h1>
+        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 560, marginBottom: 70 }}>
+          Questions about a piece, custom sizing, materials, or an order — send us a note and
+          we'll get back to you within a couple of days.
+        </p>
+      </div>
+
+      {/* Content: form + details */}
+      <div
+        className="sh-detail-grid"
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px", display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 64 }}
+      >
+        {/* Form */}
+        <div style={{ background: "#fff", border: "1px solid #E8E2D9", padding: 40 }}>
+          {sent ? (
+            <div style={{ padding: "40px 0", textAlign: "center" }}>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, marginBottom: 12 }}>
+                Thank you.
+              </div>
+              <p style={{ color: "#666", fontSize: 14, lineHeight: 1.8 }}>
+                Your message has been received. We'll be in touch soon.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div>
+                <label style={label}>Name</label>
+                <input
+                  style={inputStyle}
+                  value={form.name}
+                  onChange={update("name")}
+                  placeholder="Your full name"
+                />
+              </div>
+              <div>
+                <label style={label}>Email</label>
+                <input
+                  style={inputStyle}
+                  type="email"
+                  value={form.email}
+                  onChange={update("email")}
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div>
+                <label style={label}>Message</label>
+                <textarea
+                  style={{ ...inputStyle, minHeight: 140, resize: "vertical", fontFamily: "'DM Sans', sans-serif" }}
+                  value={form.message}
+                  onChange={update("message")}
+                  placeholder="Tell us what you're looking for…"
+                />
+              </div>
+              <button
+                onClick={handleSubmit}
+                style={{
+                  width: "100%", background: "#2C2C2C", border: "none",
+                  color: "#F7F5F0", fontSize: 11, letterSpacing: "0.16em",
+                  textTransform: "uppercase", padding: "15px 0",
+                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                  transition: "background 0.18s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#8C7355"}
+                onMouseLeave={e => e.currentTarget.style.background = "#2C2C2C"}
+              >
+                Send message
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Contact details */}
+        <div>
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
+              Workshop
+            </div>
+            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Gostivar, North Macedonia</div>
+          </div>
+
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
+              Studio
+            </div>
+            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Skopje, North Macedonia</div>
+          </div>
+
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
+              Email
+            </div>
+            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>hello@sahemhromos.com</div>
+          </div>
+
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
+              Response time
+            </div>
+            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Usually within 2 business days</div>
+          </div>
+        </div>
+      </div>
+
+      <footer className="sh-footer" style={{
+        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
+        display: "flex", justifyContent: "space-between",
+        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
+      }}>
+        <span>© 2026 Sahem Hromos — Gostivar</span>
+        <span>Made slowly. Made to last.</span>
+      </footer>
+    </div>
+  );
+}
 /* ── Root: page router ── */
 export default function App() {
+  const [page, setPage] = useState("catalogue");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   if (selectedProduct) {
-    return <DetailPage product={selectedProduct} onBack={() => setSelectedProduct(null)} />;
+    return (
+      <DetailPage
+        product={selectedProduct}
+        onBack={() => setSelectedProduct(null)}
+      />
+    );
   }
-  return <CataloguePage onOpen={setSelectedProduct} />;
+
+  if (page === "gallery") {
+    return <GalleryPage onNavigate={setPage} onOpen={setSelectedProduct} />;
+  }
+
+  if (page === "about") {
+    return <AboutUs onNavigate={setPage} />;
+  }
+
+  if (page === "contact") {
+    return <ContactUs onNavigate={setPage} />;
+  }
+
+  return (
+    <CataloguePage
+      onOpen={setSelectedProduct}
+      onNavigate={setPage}
+    />
+  );
 }
