@@ -1,56 +1,161 @@
-import img2 from "./images/img2.png";
-import img3 from "./images/img3.png";
-import img4 from "./images/img4.png";
-import img5 from "./images/img5.png";
-import img6 from "./images/img6.png";
-import img7 from "./images/img7.png";
-import img8 from "./images/img8.png";
-import img9 from "./images/img9.png";
-import img10 from "./images/img10.png";
-import img11 from "./images/img11.png";
-import img12 from "./images/img12.png";
-import img13 from "./images/img13.png";
-import img14 from "./images/img14.png";
-import img15 from "./images/img15.png";
-import img16 from "./images/img16.png";
-import img17 from "./images/img17.png";
-import img18 from "./images/img18.png";
-import img19 from "./images/img19.png";
-import img20 from "./images/img20.png";
-import img21 from "./images/img21.png";
-import img22 from "./images/img22.png";
-import img23 from "./images/img23.png";
-import img24 from "./images/img24.png";
-import img25 from "./images/img25.png";
-import img26 from "./images/img26.png";
-import img27 from "./images/img27.png";
-import img28 from "./images/img28.png";
-import img29 from "./images/img29.png";
-import img30 from "./images/img30.png";
-import img31 from "./images/img31.png";
-import img32 from "./images/img32.png";
-import img33 from "./images/img33.png";
-import img34 from "./images/img34.png";
-import img35 from "./images/img35.png";
-import img36 from "./images/img36.png";
-import img37 from "./images/img37.png";
-import img38 from "./images/img38.png";
-import img39 from "./images/img39.png";
-import img40 from "./images/img40.png";
-import img41 from "./images/img41.png";
-import img42 from "./images/img42.png";
-import img43 from "./images/img43.png";
-import img44 from "./images/img44.png";
-import img45 from "./images/img45.png";
-import img46 from "./images/img46.png";
-import img47 from "./images/img47.png";
-import img48 from "./images/img48.png";
-import img49 from "./images/img49.png";
-import img50 from "./images/img50.png";
-import img51 from "./images/img51.png";
-import img52 from "./images/img52.png";
-import img53 from "./images/img53.png";
-import img54 from "./images/img54.png";
+import img2 from "./images/danteArm/img2.png";
+import back1 from "./images/danteArm/back.jpg";
+import backRight1 from "./images/danteArm/backRight.jpg";
+import front1 from "./images/danteArm/front.jpg";
+import frontRight1 from "./images/danteArm/frontRight.jpg";
+import right1 from "./images/danteArm/right.jpg";
+import seat1 from "./images/danteArm/seat.jpg";
+import double1 from "./images/danteArm/double.jpg";
+
+import img3 from "./images/dante/img3.png";
+import back2 from "./images/dante/back.jpeg";
+import backRight2 from "./images/dante/backRight.jpeg";
+import front2 from "./images/dante/front.jpeg";
+import frontRight2 from "./images/dante/frontRight.jpeg";
+import right2 from "./images/dante/right.jpeg";
+import seat2 from "./images/dante/seat.jpeg";
+import double2 from "./images/dante/double.jpg";
+
+import img4 from "./images/feanor/img4.png";
+import back3 from "./images/feanor/back.jpeg";
+import backRight3 from "./images/feanor/backRight.jpeg";
+import front3 from "./images/feanor/front.jpeg";
+import frontRight3 from "./images/feanor/frontRight.jpeg";
+import right3 from "./images/feanor/right.jpeg";
+
+import img5 from "./images/harmony/img5.png";
+import back4 from "./images/harmony/back.jpeg";
+import backRight4 from "./images/harmony/rightFront.jpeg";
+import front4 from "./images/harmony/front.jpeg";
+import frontRight4 from "./images/harmony/rightFront.jpeg";
+import right4 from "./images/harmony/right.jpeg";
+
+import img6 from "./images/Snake/img6.png";
+import back5 from "./images/Snake/back.jpeg";
+import front5 from "./images/Snake/Front.jpeg"; 
+import right5 from "./images/Snake/right.jpeg";
+
+import img7 from "./images/snakeBar/img7.png";
+import back6 from "./images/snakeBar/back.jpeg";
+import front6 from "./images/snakeBar/front.jpeg";
+import right6 from "./images/snakeBar/right.jpeg";
+
+import img8 from "./images/siena/img8.png";
+import back7 from "./images/siena/back.jpeg";
+import front7 from "./images/siena/front.jpeg";
+import right7 from "./images/siena/right.jpeg";
+
+//broken?
+import img9 from "./images/zenith/img9.png";
+import back8 from "./images/zenith/back.jpeg";
+import front8 from "./images/zenith/front.jpeg";
+import right8 from "./images/zenith/right.jpeg";
+//broken?
+
+import img10 from "./images/kimera/img10.png";
+import back9 from "./images/kimera/seat.jpeg";
+import front9 from "./images/kimera/front.jpeg";
+import right9 from "./images/kimera/right.jpeg";
+//back image broken
+
+import img11 from "./images/KimeraBar/img11.png";
+import back10 from "./images/KimeraBar/backDetail.jpeg";
+import front10 from "./images/KimeraBar/front.jpeg";
+import right10 from "./images/KimeraBar/right.jpeg";
+
+import img12 from "./images/Beyonce/img12.png";
+import back11 from "./images/Beyonce/back.jpeg";
+import front11 from "./images/Beyonce/front.jpeg";
+import right11 from "./images/Beyonce/right.jpeg";
+import fabriv11 from "./images/Beyonce/fabric.jpeg";
+import handle11 from "./images/Beyonce/handle.jpeg";
+import rightFront11 from "./images/Beyonce/rightfront.jpeg";
+import seat11 from "./images/Beyonce/seat.jpeg";
+import rightBack11 from "./images/Beyonce/rightback.jpeg";
+
+import img13 from "./images/Whiskey/img13.png";
+
+import img14 from "./images/parisArm/img14.png";
+
+import img15 from "./images/leonardo/img15.png";
+
+import img16 from "./images/soho/img16.png";
+
+import img17 from "./images/sohoBar/img17.png";
+
+import img18 from "./images/stark/img18.png";
+
+import img19 from "./images/adar/img19.png";
+
+import img20 from "./images/caretta/img20.png";
+
+import img21 from "./images/dream/img21.png";
+
+import img22 from "./images/karan/img22.png";
+
+import img23 from "./images/missina/img23.png";
+
+import img24 from "./images/vegasKare/img24.png";
+
+import img25 from "./images/vegas/img25.png";
+
+import img26 from "./images/panelaArm/img26.png";
+
+import img27 from "./images/panela/img27.png";
+
+import img28 from "./images/fade/img28.png";
+
+import img29 from "./images/notre/img29.png";
+
+import img30 from "./images/patta/img30.png";
+
+import img31 from "./images/vergil/img31.png";
+
+import img32 from "./images/lundaSofa/img32.png";
+
+import img33 from "./images/tofuSofa/img33.png";
+
+import img34 from "./images/elfSofa/img34.png";
+
+import img35 from "./images/rivanoSofa/img35.png";
+
+import img36 from "./images/galaSofa/img36.png";
+
+import img37 from "./images/sasaSofa/img37.png";
+
+import img38 from "./images/pumaSofa/img38.png";
+
+import img39 from "./images/napolyonSofa/img39.png";
+
+import img40 from "./images/luffySofa/img40.png";
+
+import img41 from "./images/catreSofa/img41.png";
+
+import img42 from "./images/sahaSofa/img42.png";
+
+import img43 from "./images/paronSofa/img43.png";
+
+import img44 from "./images/silvaLoca/img44.png";
+
+import img45 from "./images/silvaBergere/img45.png";
+
+import img46 from "./images/silvaSofa/img46.png";
+
+import img47 from "./images/starSofa/img47.png";
+
+import img48 from "./images/berlinSofa/img48.png";
+
+import img49 from "./images/tokyoBench/img49.png";
+
+import img50 from "./images/milanoBench/img50.png";
+
+import img51 from "./images/napoliBench/img51.png";
+
+import img52 from "./images/atlantaBench/img52.png";
+
+import img53 from "./images/pragBench/img53.png";
+
+import img54 from "./images/venedikBench/img54.png";
 const PRODUCTS = [
   {
     id: 1,
@@ -64,9 +169,20 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe wood with dry cloth. Avoid moisture on fabric.",
     lead: "6–8 weeks",
-    images: [img2],
+    images: {
+      mainImage:[frontRight1],
+      frontImage:[front1],
+      sideImage:[right1],
+      topImage:[back1],
+      seatImage:[seat1],
+      rightBackImage:[backRight1],
+      doubleImage:[double1],
+    
+      
+    },
     frame: "oak",
-    color: "creme"
+    color: "creme",
+    fabric: "velvet"
   },
   {
     id: 2,
@@ -80,7 +196,16 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "6–8 weeks",
-    images: [img3],
+    images: {
+      mainImage:[img3],
+      frontImage:[front2],
+      sideImage:[right2],
+      topImage:[back2],
+      rightFrontImage:[frontRight2],
+      seatImage:[seat2],
+      rightBackImage:[backRight2],
+      doubleImage:[double2],
+    },
     frame: "oak",
     color: "creme"
   },
@@ -96,7 +221,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Dry cloth cleaning.",
     lead: "4–6 weeks",
-    images: [img4],
+    images: {
+      mainImage:[img4],
+      frontImage:[front3],
+      sideImage:[right3],
+      topImage:[back3],
+    },
     frame: "oak",
     color: "creme"
   },
@@ -112,7 +242,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Dry cloth cleaning.",
     lead: "4–6 weeks",
-    images: [img5],
+    images: {
+      mainImage:[img5],
+      frontImage:[front4],
+      sideImage:[right4],
+      topImage:[back4],
+    },
     frame: "oak",
     color: "creme"
   },
@@ -128,7 +263,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img6],
+    images: {
+    mainImage:[img6],
+      frontImage:[front5],
+      sideImage:[right5],
+      topImage:[back5],
+    },
     frame: "oak",
     color: "creme"
   },
@@ -144,7 +284,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img7],
+    images: {
+      mainImage:[img7],
+      frontImage:[front6],
+      sideImage:[right6],
+      topImage:[back6],
+    },
     frame: "oak",
     color: "brown"
   },
@@ -160,7 +305,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img8],
+    images: {
+      mainImage:[img8],
+      frontImage:[front7],
+      sideImage:[right7],
+      topImage:[back7],
+    },
     frame: "oak",
     color: "brown"
   },
@@ -176,7 +326,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img9],
+    images: {
+      mainImage:[img9],
+      frontImage:[front8],
+      sideImage:[right8],
+      topImage:[back8],
+    },
     frame: "oak",
     color: "brown"
   },
@@ -192,7 +347,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img10],
+    images: {
+      mainImage:[img10],
+      frontImage:[front9],
+      sideImage:[right9],
+      topImage:[back9],
+    },
     frame: "oak",
     color: "brown"
   },
@@ -208,7 +368,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img11],
+    images: {
+      mainImage:[img11],
+      frontImage:[front10],
+      sideImage:[right10],
+      topImage:[back10],
+    },
     frame: "oak",
     color: "brown"
   },
@@ -224,7 +389,18 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img12],
+    images: {
+      mainImage:[img12],
+      frontImage:[front11],
+      sideImage:[right11],
+      topImage:[back11],
+      fabricImage:[fabriv11],
+      handleImage:[handle11],
+      rightFrontImage:[rightFront11],
+      seatImage:[seat11],
+      rightBackImage:[rightBack11],
+    
+    },
     frame: "oak",
     color: "brown"
   },
@@ -240,7 +416,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img13],
+    images: {
+      mainImage:[img13],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -256,7 +437,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric, wipe frame.",
     lead: "6–8 weeks",
-    images: [img14],
+    images: {
+      mainImage:[img14],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -272,7 +458,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img15],
+    images: {
+      mainImage:[img15],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -288,7 +479,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img16],
+    images: {
+      mainImage:[img16],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -304,7 +500,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img17],
+    images: {
+      mainImage:[img17],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -320,7 +521,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img18],
+    images: {
+      mainImage:[img18],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -336,7 +542,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img19],
+    images: {
+      mainImage:[img19],
+      frontImage:[img2],
+      sideImage:[img2],
+      topImage:[img2],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -352,7 +563,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img20],
+    images: {
+      mainImage:[img20],
+      frontImage:[img20],
+      sideImage:[img20],
+      topImage:[img20],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -368,7 +584,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img21],
+    images: {
+      mainImage:[img21],
+      frontImage:[img21],
+      sideImage:[img21],
+      topImage:[img21],
+    },
     frame: "oak",
     color: "dark brown"
   },
@@ -384,7 +605,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img22],
+    images: {
+      mainImage:[img22],
+      frontImage:[img22],
+      sideImage:[img22],
+      topImage:[img22],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -400,7 +626,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img23],
+    images: {
+      mainImage:[img23],
+      frontImage:[img23],
+      sideImage:[img23],
+      topImage:[img23],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -416,7 +647,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img24],
+    images: {
+      mainImage:[img24],
+      frontImage:[img24],
+      sideImage:[img24],
+      topImage:[img24],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -432,7 +668,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img25],
+    images: {
+      mainImage:[img25],
+      frontImage:[img25],
+      sideImage:[img25],
+      topImage:[img25],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -448,7 +689,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–8 weeks",
-    images: [img26],
+    images: {
+      mainImage:[img26],
+      frontImage:[img26],
+      sideImage:[img26],
+      topImage:[img26],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -464,7 +710,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img27],
+    images: {
+      mainImage:[img27],
+      frontImage:[img27],
+      sideImage:[img27],
+      topImage:[img27],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -480,7 +731,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img28],
+    images: {
+      mainImage:[img28],
+      frontImage:[img28],
+      sideImage:[img28],
+      topImage:[img28],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -496,7 +752,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img29],
+    images: {
+      mainImage:[img29],
+      frontImage:[img29],
+      sideImage:[img29],
+      topImage:[img29],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -512,7 +773,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img30],
+    images: {
+      mainImage:[img30],
+      frontImage:[img30],
+      sideImage:[img30],
+      topImage:[img30],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -528,7 +794,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img31],
+    images: {
+      mainImage:[img31],
+      frontImage:[img31],
+      sideImage:[img31],
+      topImage:[img31],
+    },
     frame: "oak",
     color: "navy"
   },
@@ -546,7 +817,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img32],
+    images: {
+      mainImage:[img32],
+      frontImage:[img32],
+      sideImage:[img32],
+      topImage:[img32],
+    },
     frame: "oak",
     color: "green"
   },
@@ -562,7 +838,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img33],
+    images: {
+      mainImage:[img33],
+      frontImage:[img33],
+      sideImage:[img33],
+      topImage:[img33],
+    },
     frame: "oak",
     color: "green"
   },
@@ -578,7 +859,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img34],
+    images: {
+      mainImage:[img34],
+      frontImage:[img34],
+      sideImage:[img34],
+      topImage:[img34],
+    },
     frame: "oak",
     color: "green"
   },
@@ -594,7 +880,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img35],
+    images: {
+      mainImage:[img35],
+      frontImage:[img35],
+      sideImage:[img35],
+      topImage:[img35],
+    },
     frame: "oak",
     color: "green"
   },
@@ -610,7 +901,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img36],
+    images: {
+      mainImage:[img36],
+      frontImage:[img36],
+      sideImage:[img36],
+      topImage:[img36],
+    },
     frame: "oak",
     color: "green"
   },
@@ -626,7 +922,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img37],
+    images: {
+      mainImage:[img37],
+      frontImage:[img37],
+      sideImage:[img37],
+      topImage:[img37],
+    },
     frame: "oak",
     color: "green"
   },
@@ -642,7 +943,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img38],
+    images: {
+      mainImage:[img38],
+      frontImage:[img38],
+      sideImage:[img38],
+      topImage:[img38],
+    },
     frame: "oak",
     color: "green"
   },
@@ -658,7 +964,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img39],
+    images: {
+      mainImage:[img39],
+      frontImage:[img39],
+      sideImage:[img39],
+      topImage:[img39],
+    },
     frame: "oak",
     color: "green"
   },
@@ -674,7 +985,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img40],
+    images: {
+      mainImage:[img40],
+      frontImage:[img40],
+      sideImage:[img40],
+      topImage:[img40],
+    },
     frame: "oak",
     color: "green"
   },
@@ -690,7 +1006,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img41],
+    images: {
+      mainImage:[img41],
+      frontImage:[img41],
+      sideImage:[img41],
+      topImage:[img41],
+    },
     frame: "oak",
     color: "green"
   },
@@ -706,7 +1027,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img42],
+    images: {
+      mainImage:[img42],
+      frontImage:[img42],
+      sideImage:[img42],
+      topImage:[img42],
+    },
     frame: "oak",
     color: "green"
   },
@@ -722,7 +1048,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img43],
+    images: {
+      mainImage:[img43],
+      frontImage:[img43],
+      sideImage:[img43],
+      topImage:[img43],
+    },
     frame: "oak",
     color: "green"
   },
@@ -738,7 +1069,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img44],
+    images: {
+      mainImage:[img44],
+      frontImage:[img44],
+      sideImage:[img44],
+      topImage:[img44],
+    },
     frame: "oak",
     color: null
   },
@@ -754,7 +1090,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–8 weeks",
-    images: [img45],
+    images: {
+      mainImage:[img45],
+      frontImage:[img45],
+      sideImage:[img45],
+      topImage:[img45],
+    },
     frame: "oak",
     color: null
   },
@@ -770,7 +1111,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img46],
+    images: {
+      mainImage:[img46],
+      frontImage:[img46],
+      sideImage:[img46],
+      topImage:[img46],
+    },
     frame: "oak",
     color: null
   },
@@ -786,7 +1132,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img47],
+    images: {
+      mainImage:[img47],
+      frontImage:[img47],
+      sideImage:[img47],
+      topImage:[img47],
+    },
     frame: "oak",
     color: null
   },
@@ -802,7 +1153,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Vacuum fabric.",
     lead: "6–10 weeks",
-    images: [img48],
+    images: {
+      mainImage:[img48],
+      frontImage:[img48],
+      sideImage:[img48],
+      topImage:[img48],
+    },
     frame: "oak",
     color: null
   },
@@ -820,7 +1176,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img49],
+    images: {
+      mainImage:[img49],
+      frontImage:[img49],
+      sideImage:[img49],
+      topImage:[img49],
+    },
     frame: "oak",
     color: null
   },
@@ -836,7 +1197,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img50],
+    images: {
+      mainImage:[img50],
+      frontImage:[img50],
+      sideImage:[img50],
+      topImage:[img50],
+    },
     frame: "oak",
     color: null
   },
@@ -852,7 +1218,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img51],
+    images: {
+      mainImage:[img51],
+      frontImage:[img51],
+      sideImage:[img51],
+      topImage:[img51],
+    },
     frame: "oak",
     color: null
   },
@@ -868,7 +1239,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img52],
+    images: {
+      mainImage:[img52],
+      frontImage:[img52],
+      sideImage:[img52],
+      topImage:[img52],
+    },
     frame: "oak",
     color: null
   },
@@ -884,7 +1260,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img53],
+    images: {
+      mainImage:[img53],
+      frontImage:[img53],
+      sideImage:[img53],
+      topImage:[img53],
+    },
     frame: "oak",
     color: null
   },
@@ -900,7 +1281,12 @@ const PRODUCTS = [
     finishes: [],
     care: "Wipe clean.",
     lead: "4–6 weeks",
-    images: [img54],
+    images: {
+      mainImage:[img54],
+      frontImage:[img54],
+      sideImage:[img54],
+      topImage:[img54],
+    },
     frame: "oak",
     color: null
   }

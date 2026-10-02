@@ -1,1037 +1,950 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import PRODUCTS from "./products";
 import logo from "./images/unnamed.png";
 import naturalOak from "./images/Natural Oak.png";
 import naturalBeech from "./images/Natural Beech.png";
 import tobaccoOak from "./images/Tobacco Oak.png";
-const CATEGORIES = ["All", "Chairs", "Sofas", "Benches"];
-const SORT_OPT   = ["Featured", "Name A–Z", "Category"];
 
+/* ─────────────────────────── Constants ─────────────────────────── */
+
+const CATEGORIES = ["All", "Chairs", "Sofas", "Benches"];
+const SORT_OPTIONS = ["Featured", "Name A–Z", "Category"];
+const CONTACT_EMAIL = "hello@sahemhromos.com";
+
+const NAV_ITEMS = [
+  ["catalogue", "Catalogue"],
+  ["materials", "Materials"],
+  ["about", "About"],
+  ["contact", "Contact"],
+];
+
+const MATERIALS = [
+  { name: "Natural Oak", image: naturalOak, note: "Solid oak with a light, natural tone." },
+  { name: "Natural Beech", image: naturalBeech, note: "Solid beech with a soft, even grain." },
+  { name: "Tobacco Oak", image: tobaccoOak, note: "Solid oak in a deeper, warm brown." },
+];
 
 const WOOD_TONES = {
   Birch: "#D4C5A9", Oak: "#C4A882", Ash: "#B8A99A",
   Beech: "#C9B99A", Pine: "#C6A87A", Walnut: "#8B6347",
   Rattan: "#C8A96E", Marble: "#DDDAD4", Steel: "#9AA3A8",
 };
-function swatch(material) {
-  for (const [k, v] of Object.entries(WOOD_TONES)) if (material.includes(k)) return v;
+
+function swatch(material = "") {
+  for (const [key, value] of Object.entries(WOOD_TONES)) {
+    if (material.includes(key)) return value;
+  }
   return "#B8A99A";
 }
 
-/* ── Global responsive rules ──
-   Inline styles win over normal stylesheet rules, so the mobile
-   overrides below use !important to take priority at each breakpoint.
-   This lets every page keep its desktop inline styles unchanged. */
-function GlobalStyles() {
-  return (
-    <style>{`
-      @media (max-width: 900px) {
-        .sh-layout { flex-direction: column !important; }
-        .sh-sidebar {
-          width: 100% !important;
-          box-sizing: border-box !important;
-          position: static !important;
-          border-right: none !important;
-          border-bottom: 1px solid #E8E2D9 !important;
-          min-height: auto !important;
-        }
-        .sh-detail-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-        .sh-related-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      }
+/* Image fields on a product, in the order they appear in the gallery. */
+const VIEW_FIELDS = [
+  ["mainImage", "Main view"],
+  ["frontImage", "Front view"],
+  ["sideImage", "Side view"],
+  ["topImage", "Back view"],
+  ["fabricImage", "Fabric view"],
+  ["handleImage", "Handle view"],
+  ["rightFrontImage", "Right front view"],
+  ["seatImage", "Seat view"],
+  ["rightBackImage", "Right back view"],
+];
 
-      @media (max-width: 640px) {
-        .sh-nav-cat {
-          flex-direction: column !important;
-          align-items: flex-start !important;
-          height: auto !important;
-          padding: 16px 20px !important;
-          gap: 12px !important;
-        }
-        .sh-nav-links {
-          padding-left: 0 !important;
-          gap: 18px !important;
-          flex-wrap: wrap !important;
-          width: 100% !important;
-        }
-        .sh-nav-spacer { display: none !important; }
-
-        .sh-detail-nav { padding: 0 20px !important; gap: 8px !important; }
-        .sh-detail-nav-back span:last-child { display: none; }
-
-        .sh-hero { padding: 56px 20px 36px !important; }
-
-        .sh-content-padding { padding: 36px 20px !important; }
-        .sh-main-padding { padding: 20px 16px !important; }
-
-        .sh-product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 12px !important; }
-        .sh-related-grid { grid-template-columns: 1fr !important; }
-
-        .sh-footer {
-          flex-direction: column !important;
-          align-items: flex-start !important;
-          gap: 6px !important;
-          padding: 20px !important;
-        }
-      }
-    `}</style>
-  );
+/* Every usable image for a product, de-duplicated. Handles a string, an
+   array, or a missing field for each image slot. */
+function getViews(product) {
+  const seen = new Set();
+  const views = [];
+  VIEW_FIELDS.forEach(([field, label]) => {
+    const value = product.images?.[field];
+    const list = (Array.isArray(value) ? value : [value]).filter(Boolean);
+    list.forEach((src, i) => {
+      if (seen.has(src)) return;
+      seen.add(src);
+      views.push({ src, label: list.length > 1 ? `${label} ${i + 1}` : label });
+    });
+  });
+  return views;
 }
 
-/* ── Furniture illustrations ── */
-function FurnitureArt({ category, material, size = "small" }) {
-  const tone = swatch(material);
-  const bg = size === "large" ? "#EFEBE3" : "#F7F5F0";
-  const vb = size === "large" ? "0 0 480 360" : "0 0 240 180";
-  const s = size === "large" ? 2 : 1;
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+function getCardImage(product) {
+  const main = product.images?.mainImage;
+  return (Array.isArray(main) ? main[0] : main) || getViews(product)[0]?.src || null;
 }
 
-  
-  
-/* ── Tag chip ── */
+/* ─────────────────────────── Styles ─────────────────────────── */
+
+const STYLES = `
+:root {
+  --bg: #F7F5F0;
+  --bg-soft: #EFEBE3;
+  --line: #E8E2D9;
+  --ink: #2C2C2C;
+  --muted: #6F675C;
+  --faint: #B8AFA2;
+  --accent: #8C7355;
+  --accent-text: #75603F;
+  --nav-h: 80px;
+  --page-x: 48px;
+  --content-max: 1200px;
+  --gutter: max(var(--page-x), calc((100vw - var(--content-max)) / 2 + var(--page-x)));
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); }
+img { max-width: 100%; }
+button { font-family: inherit; }
+.sh-app { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+.sh-main { flex: 1; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.sh-skip { position: absolute; left: 16px; top: -60px; z-index: 300; background: var(--ink); color: var(--bg); padding: 10px 16px; font-size: 13px; text-decoration: none; }
+.sh-skip:focus { top: 12px; }
+
+/* Nav */
+.sh-nav { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--line); }
+.sh-nav-inner { display: flex; align-items: center; justify-content: space-between; height: var(--nav-h); padding: 0 var(--gutter); }
+.sh-logo { background: none; border: 0; padding: 0; cursor: pointer; display: block; line-height: 0; transition: opacity 0.3s ease; }
+.sh-logo:hover { opacity: 0.8; }
+.sh-logo img { height: 54px; width: auto; max-width: 50vw; display: block; }
+.sh-links { display: flex; gap: 44px; }
+.sh-link { position: relative; background: none; border: 0; padding: 8px 0; cursor: pointer; font-family: var(--sans); font-size: 11.5px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); transition: color 0.25s ease; }
+.sh-link::after { content: ""; position: absolute; left: 0; right: 0.16em; bottom: 1px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.sh-link:hover { color: var(--ink); }
+.sh-link:hover::after, .sh-link[aria-current="page"]::after { transform: scaleX(1); }
+.sh-link[aria-current="page"] { color: var(--accent-text); }
+.sh-burger { display: none; position: relative; width: 44px; height: 44px; margin-right: -12px; background: none; border: 0; cursor: pointer; }
+.sh-burger span { position: absolute; left: 12px; right: 12px; height: 1px; background: var(--ink); transition: top 0.3s ease, transform 0.3s ease; }
+.sh-burger span:nth-child(1) { top: 18px; }
+.sh-burger span:nth-child(2) { top: 25px; }
+.sh-burger[aria-expanded="true"] span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+.sh-burger[aria-expanded="true"] span:nth-child(2) { top: 21px; transform: rotate(-45deg); }
+.sh-scrim { position: fixed; inset: var(--nav-h) 0 0 0; background: rgba(44, 44, 44, 0.2); animation: sh-fade 0.3s ease both; }
+
+/* Footer */
+.sh-footer { border-top: 1px solid var(--line); padding: 28px var(--gutter); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+/* Shared type */
+.sh-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-text); margin: 0 0 18px; }
+.sh-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 500; }
+.sh-h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(38px, 6.5vw, 72px); line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 24px; }
+.sh-lead { font-size: 15px; line-height: 1.85; color: var(--muted); max-width: 560px; margin: 0; }
+.sh-wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--page-x); }
+.sh-page-head { padding-top: 88px; padding-bottom: 64px; }
+.sh-btn { display: inline-block; background: var(--ink); color: var(--bg); border: 1px solid var(--ink); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; padding: 16px 40px; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.18s, border-color 0.18s; }
+.sh-btn:hover { background: var(--accent); border-color: var(--accent); }
+.sh-btn-block { display: block; width: 100%; }
+.sh-btn-ghost { background: transparent; color: var(--ink); padding: 10px 0; width: 100%; font-size: 10px; letter-spacing: 0.14em; }
+.sh-btn-ghost:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* Tag */
+.sh-tag { display: inline-block; border: 1px solid var(--ink); color: var(--ink); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; padding: 2px 7px; text-transform: uppercase; white-space: nowrap; }
+.sh-tag-new { border-color: var(--accent); color: var(--accent-text); }
+
+/* Images */
+.sh-img-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-soft); color: var(--faint); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Hero: split layout, copy left, photograph right */
+.sh-hero { display: grid; grid-template-columns: 1fr 1fr; min-height: min(calc(100vh - var(--nav-h)), 720px); border-bottom: 1px solid var(--line); }
+.sh-hero-copy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 72px 56px 72px var(--gutter); }
+.sh-hero-copy .sh-h1 { font-size: clamp(40px, 5.5vw, 72px); margin-bottom: 20px; }
+.sh-hero-copy .sh-lead { max-width: 400px; margin-bottom: 40px; }
+.sh-hero-media { position: relative; margin: 24px 0; background: var(--bg-soft); border-radius: 16px 0 0 16px; overflow: hidden; }
+.sh-hero-media img { position: absolute; inset: 7%; width: 86%; height: 86%; object-fit: contain; mix-blend-mode: multiply; }
+.sh-hero-media .sh-img-fallback { position: absolute; inset: 0; }
+.sh-btn-arrow span { display: inline-block; margin-left: 12px; transition: transform 0.25s ease; }
+.sh-btn-arrow:hover span { transform: translateX(4px); }
+
+/* Catalogue layout */
+.sh-cat { display: flex; align-items: flex-start; scroll-margin-top: var(--nav-h); }
+.sh-sidebar { width: 220px; flex-shrink: 0; padding: 32px 28px; border-right: 1px solid var(--line); position: sticky; top: var(--nav-h); }
+.sh-search { width: 100%; background: #fff; border: 1px solid var(--line); font-size: 13px; padding: 10px 12px; font-family: var(--sans); color: var(--ink); border-radius: 0; }
+.sh-search::placeholder { color: var(--faint); }
+.sh-cats { display: flex; flex-direction: column; }
+.sh-cat-btn { background: none; border: 0; text-align: left; padding: 7px 0; font-size: 13px; cursor: pointer; color: var(--muted); transition: color 0.15s; }
+.sh-cat-btn:hover { color: var(--ink); }
+.sh-cat-btn[aria-pressed="true"] { color: var(--ink); font-weight: 500; }
+.sh-results { flex: 1; min-width: 0; padding: 28px 36px 60px; }
+.sh-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+.sh-count { font-size: 12px; color: var(--muted); }
+.sh-count b { color: var(--ink); font-weight: 500; }
+.sh-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.sh-pill { padding: 6px 14px; font-size: 11px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; transition: all 0.18s; }
+.sh-pill:hover { border-color: var(--ink); color: var(--ink); }
+.sh-pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.sh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.sh-empty { padding: 80px 0; text-align: center; color: var(--muted); font-size: 14px; }
+.sh-empty p { margin: 0 0 20px; font-style: italic; }
+
+/* Product card */
+.sh-card { background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; transition: box-shadow 0.25s ease; animation: sh-fade 0.4s ease both; }
+.sh-card:hover, .sh-card:focus-within { box-shadow: 0 8px 28px rgba(44,44,44,0.08); }
+.sh-card-media { position: relative; aspect-ratio: 1 / 1; background: #fff; overflow: hidden; cursor: pointer; }
+.sh-card-media > img { position: absolute; inset: 10%; width: 80%; height: 80%; object-fit: contain; }
+.sh-card-media .sh-img-fallback { position: absolute; inset: 0; }
+.sh-card-hover { position: absolute; inset: 0; background: rgba(247,245,240,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 14px; opacity: 0; transition: opacity 0.22s ease; pointer-events: none; }
+.sh-card:hover .sh-card-hover, .sh-card:focus-within .sh-card-hover { opacity: 1; }
+.sh-card-hover p { margin: 0; font-size: 12px; line-height: 1.7; text-align: center; font-style: italic; }
+.sh-dims { display: flex; gap: 18px; }
+.sh-dim { text-align: center; }
+.sh-dim b { display: block; font-size: 13px; font-weight: 500; }
+.sh-dim span { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.sh-card-foot { padding: 14px 16px 16px; border-top: 1px solid var(--line); flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.sh-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.sh-card-name { font-family: var(--serif); font-size: 15px; line-height: 1.25; margin: 0 0 6px; font-weight: 400; }
+.sh-mat { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+.sh-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--line); flex-shrink: 0; }
+
+/* Detail */
+.sh-back { background: none; border: 0; padding: 0; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 32px 0 0; }
+.sh-back:hover { color: var(--ink); }
+.sh-detail { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: start; padding-top: 28px; padding-bottom: 80px; }
+.sh-stage { background: var(--bg-soft); aspect-ratio: 1 / 1; max-height: 680px; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sh-stage img { width: 100%; height: 100%; object-fit: contain; display: block; animation: sh-fade 0.35s ease both; }
+.sh-gallery-bar { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.sh-arrow { flex-shrink: 0; width: 40px; height: 40px; border: 1px solid #D8D0C5; background: var(--bg); color: var(--accent-text); cursor: pointer; font-size: 16px; font-family: Arial, sans-serif; transition: all 0.2s; }
+.sh-arrow:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.sh-thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 2px; flex: 1; scrollbar-width: thin; }
+.sh-thumb { flex: 0 0 auto; width: 64px; height: 64px; padding: 0; background: var(--bg-soft); border: 1px solid transparent; cursor: pointer; opacity: 0.65; transition: opacity 0.2s, border-color 0.2s; }
+.sh-thumb:hover { opacity: 1; }
+.sh-thumb[aria-current="true"] { opacity: 1; border-color: var(--accent); }
+.sh-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sh-info { padding-top: 8px; }
+.sh-title { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 3.6vw, 44px); line-height: 1.12; margin: 0 0 12px; }
+.sh-info .sh-mat { font-size: 12px; margin-bottom: 28px; }
+.sh-info .sh-mat .sh-dot { width: 10px; height: 10px; }
+.sh-prose p { font-size: 15px; line-height: 1.8; color: #555; margin: 0 0 16px; max-width: 60ch; }
+.sh-prose p:first-child { font-style: italic; }
+.sh-specs { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 28px; }
+.sh-spec { margin-bottom: 24px; }
+.sh-spec-text { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0; }
+.sh-spec-strong { font-size: 14px; color: var(--ink); }
+.sh-dims-lg { display: flex; gap: 28px; flex-wrap: wrap; }
+.sh-dims-lg b { display: block; font-family: var(--serif); font-weight: 400; font-size: 22px; }
+.sh-dims-lg b small { font-size: 12px; margin-left: 2px; }
+.sh-dims-lg span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.sh-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.sh-chip { border: 1px solid var(--line); padding: 5px 12px; font-size: 12px; letter-spacing: 0.04em; }
+.sh-related { border-top: 1px solid var(--line); padding-top: 40px; padding-bottom: 80px; }
+.sh-related .sh-grid { grid-template-columns: repeat(3, 1fr); }
+
+/* Materials */
+.sh-mat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; padding-bottom: 80px; }
+.sh-mat-card { margin: 0; }
+.sh-mat-img { background: var(--bg-soft); aspect-ratio: 4 / 5; overflow: hidden; }
+.sh-mat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sh-mat-card h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 18px 0 6px; }
+.sh-mat-card p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--muted); }
+.sh-mat-card .sh-count { display: block; margin-top: 10px; }
+.sh-cta { text-align: center; padding-bottom: 100px; }
+
+/* About */
+.sh-story { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding-bottom: 80px; }
+.sh-story p, .sh-values p { font-size: 15px; color: #555; line-height: 1.85; margin: 0 0 20px; max-width: 60ch; }
+.sh-values { border-top: 1px solid var(--line); padding-top: 48px; padding-bottom: 80px; }
+.sh-values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; margin-top: 32px; }
+.sh-value { background: #fff; border: 1px solid var(--line); padding: 30px; }
+.sh-value h3 { font-family: var(--serif); font-weight: 400; font-size: 21px; margin: 0 0 14px; }
+.sh-value p { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* Contact */
+.sh-contact { display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; padding-bottom: 100px; }
+.sh-form { background: #fff; border: 1px solid var(--line); padding: 40px; }
+.sh-field { margin-bottom: 20px; }
+.sh-field label { display: block; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.sh-input { width: 100%; background: #fff; border: 1px solid var(--line); font-size: 14px; padding: 12px 14px; font-family: var(--sans); color: var(--ink); border-radius: 0; }
+.sh-input:focus-visible { outline-offset: 0; border-color: var(--accent); }
+textarea.sh-input { min-height: 140px; resize: vertical; }
+.sh-error { color: #9B2C2C; font-size: 13px; margin: 0 0 16px; }
+.sh-sent { padding: 32px 0; text-align: center; }
+.sh-sent h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; margin: 0 0 12px; }
+.sh-sent p { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0; }
+.sh-detail-item { margin-bottom: 32px; }
+.sh-detail-item p { margin: 0; font-size: 14px; line-height: 1.8; }
+.sh-detail-item a { color: var(--ink); }
+
+@keyframes sh-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 900px) {
+  :root { --page-x: 28px; }
+  .sh-links { gap: 32px; }
+  .sh-detail, .sh-story, .sh-contact { grid-template-columns: 1fr; gap: 40px; }
+  .sh-hero { grid-template-columns: 1fr; min-height: 0; }
+  .sh-hero-copy { padding: 56px var(--page-x) 40px; }
+  .sh-hero-media { margin: 0; border-radius: 0; aspect-ratio: 4 / 3; }
+  .sh-cat { flex-direction: column; align-items: stretch; }
+  .sh-sidebar { width: 100%; position: static; border-right: 0; border-bottom: 1px solid var(--line); padding: 20px var(--page-x); }
+  .sh-search { max-width: 420px; }
+  .sh-cats { flex-direction: row; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .sh-cat-btn { padding: 6px 14px; border: 1px solid var(--line); font-size: 12px; }
+  .sh-cat-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .sh-sidebar .sh-label { display: none; }
+  .sh-results { padding: 24px var(--page-x) 48px; }
+  .sh-related .sh-grid { grid-template-columns: repeat(2, 1fr); }
+  .sh-mat-grid { grid-template-columns: repeat(2, 1fr); }
+  .sh-page-head { padding-top: 56px; padding-bottom: 40px; }
+}
+
+@media (max-width: 760px) {
+  :root { --nav-h: 64px; }
+  .sh-logo img { height: 42px; }
+  .sh-burger { display: block; }
+  .sh-links { position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 0; background: var(--bg); border-bottom: 1px solid var(--line); padding: 4px var(--page-x) 20px; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity 0.28s ease, transform 0.28s ease, visibility 0s linear 0.28s; }
+  .sh-links.is-open { opacity: 1; visibility: visible; transform: none; transition: opacity 0.28s ease, transform 0.28s ease, visibility 0s; }
+  .sh-link { text-align: left; padding: 16px 0; font-family: var(--serif); font-size: 26px; letter-spacing: 0; text-transform: none; color: var(--ink); border-bottom: 1px solid var(--line); }
+  .sh-link:last-child { border-bottom: 0; }
+  .sh-link::after { display: none; }
+  .sh-link[aria-current="page"] { color: var(--accent-text); }
+}
+
+@media (max-width: 640px) {
+  :root { --page-x: 20px; }
+  .sh-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .sh-related .sh-grid, .sh-mat-grid { grid-template-columns: 1fr; }
+  .sh-card-foot { padding: 12px; }
+  .sh-card-top { flex-direction: column; gap: 8px; }
+  .sh-card-hover { display: none; }
+  .sh-form { padding: 24px 20px; }
+  .sh-btn { padding: 15px 28px; }
+  .sh-footer { flex-direction: column; padding: 20px var(--page-x); }
+  .sh-thumb { width: 56px; height: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+`;
+
+/* ─────────────────────────── Small components ─────────────────────────── */
+
 function Tag({ label }) {
+  return <span className={`sh-tag${label === "New" ? " sh-tag-new" : ""}`}>{label}</span>;
+}
+
+/* Image that never leaves an ugly hole: reports failures to the parent
+   (so it can drop the slot) or shows a quiet placeholder. */
+function SmartImage({ src, alt, onError, ...rest }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <div className="sh-img-fallback" role="img" aria-label={alt}>Image coming soon</div>;
   return (
-    <div style={{
-      display: "inline-block",
-      border: `1px solid ${label === "New" ? "#8C7355" : "#2C2C2C"}`,
-      color: label === "New" ? "#8C7355" : "#2C2C2C",
-      fontSize: 9, fontWeight: 600, letterSpacing: "0.14em",
-      padding: "2px 7px", textTransform: "uppercase",
-    }}>{label}</div>
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      onError={() => { setFailed(true); onError?.(src); }}
+      {...rest}
+    />
   );
 }
 
-/* ── Product card── */
-function ProductCard({ product, onOpen }) {
-  const [hovered, setHovered] = useState(false);
+function Spec({ label, children }) {
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: "#FFFFFF", border: "1px solid #E8E2D9", cursor: "pointer",
-        transition: "box-shadow 0.25s ease",
-        boxShadow: hovered ? "0 8px 32px rgba(44,44,44,0.1)" : "none",
-        display: "flex", flexDirection: "column",
-      }}
-    >
-      {/* Illustration */}
-      <div style={{ position: "relative", height: 300, background: "white", overflow: "hidden" }}>
-        <div
-        style={{
-          position: "relative",
-          height: 300,
-          background: "white",
-          overflow: "hidden",
-        }}>
-          <img
-            src={product.images}
-              alt={product.name}
-              style={{
-                width: 220,
-                height: 220,
-                maxWidth: "80%",
-                maxHeight: "80%",
-                objectFit: "contain",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-              }}/>
-          </div>
-        {/* hover: show description */}
-        <div style={{
-          position: "absolute", inset: 0, background: "rgba(247,245,240,0.96)",
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          padding: 24, gap: 14,
-          opacity: hovered ? 1 : 0, transition: "opacity 0.22s ease",
-        }}>
-          <p style={{ color: "#2C2C2C", fontSize: 12, lineHeight: 1.7, textAlign: "center", margin: 0, fontStyle: "italic" }}>
-            {product.description}
-          </p>
-          <div style={{ display: "flex", gap: 18 }}>
-            {[["W", product.w], ["H", product.h], ["D", product.d]].map(([l, v]) => (
-              <div key={l} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 13, color: "#2C2C2C", fontWeight: 500 }}>{v}</div>
-                <div style={{ fontSize: 9, color: "#B8AFA2", letterSpacing: "0.1em", textTransform: "uppercase" }}>{l} cm</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ padding: "14px 16px 16px", borderTop: "1px solid #E8E2D9", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 14, fontFamily: "'DM Serif Display', serif", color: "#2C2C2C", marginBottom: 4, lineHeight: 1.2 }}>
-              {product.name}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: swatch(product.material), border: "1px solid #E8E2D9" }} />
-              <span style={{ fontSize: 10, color: "#B8AFA2", letterSpacing: "0.06em" }}>{product.material}</span>
-            </div>
-          </div>
-          {product.tag && <Tag label={product.tag} />}
-        </div>
-
-        <button
-          onClick={() => onOpen(product)}
-          style={{
-            width: "100%", background: "transparent", border: "1px solid #2C2C2C",
-            color: "#2C2C2C", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
-            padding: "9px 0", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-            transition: "all 0.18s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "#2C2C2C"; e.currentTarget.style.color = "#F7F5F0"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#2C2C2C"; }}
-        >
-          See more
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ── Detail page ── */
-function DetailPage({ product, onBack }) {
-  const [activeView, setActiveView] = useState(0);
-  const views = ["Front view", "Side view", "Top view"];
-
-  useEffect(() => { window.scrollTo(0, 0); }, []);
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-      <GlobalStyles />
-
-      {/* Nav */}
-      <nav className="sh-detail-nav" style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 48px", height: 60, borderBottom: "1px solid #E8E2D9",
-        position: "sticky", top: 0,
-        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
-      }}>
-        <img
-          src={logo}
-          alt="Sahem Hromos"
-          style={{
-          height: 60, 
-          width: "auto",
-          maxWidth: "40vw",
-          display: "block",
-          }}/>
-        <button
-          onClick={onBack}
-          className="sh-detail-nav-back"
-          style={{
-            background: "transparent", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 8,
-            fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
-            color: "#B8AFA2", fontFamily: "'DM Sans', sans-serif",
-            padding: 0, transition: "color 0.15s", whiteSpace: "nowrap",
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = "#2C2C2C"}
-          onMouseLeave={e => e.currentTarget.style.color = "#B8AFA2"}
-        >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>←</span> <span>Back to catalogue</span>
-        </button>
-      </nav>
-
-      {/* Content */}
-      <div className="sh-content-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 48px" }}>
-
-        {/* Top section: illustration + info */}
-        <div className="sh-detail-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "start", marginBottom: 80 }}>
-
-          {/* Left: large illustration + view switcher */}
-          <div>
-            <div style={{ background: "#EFEBE3", marginBottom: 12, overflow: "hidden" }}>
-              <FurnitureArt category={product.category} material={product.material} size="large" />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {views.map((v, i) => (
-                <button key={v} onClick={() => setActiveView(i)} style={{
-                  flex: 1, padding: "7px 0", fontSize: 9, letterSpacing: "0.12em",
-                  textTransform: "uppercase", cursor: "pointer",
-                  fontFamily: "'DM Sans', sans-serif",
-                  background: activeView === i ? "#2C2C2C" : "transparent",
-                  color: activeView === i ? "#F7F5F0" : "#B8AFA2",
-                  border: "1px solid #E8E2D9",
-                  transition: "all 0.15s",
-                }}>
-                  {v}
-                </button>
-              ))}
-            </div>
-            {/* Small thumbnail views */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginTop: 8 }}>
-              {[0,1,2].map(i => (
-                <div
-                  key={i}
-                  onClick={() => setActiveView(i)}
-                  style={{
-                    border: `1px solid ${activeView === i ? "#2C2C2C" : "#E8E2D9"}`,
-                    background: "#EFEBE3", overflow: "hidden", cursor: "pointer",
-                    opacity: activeView === i ? 1 : 0.6, transition: "all 0.15s",
-                  }}
-                >
-                  <div style={{ transform: `rotate(${i * 90}deg) scale(0.9)`, transformOrigin: "center" }}>
-                    <FurnitureArt category={product.category} material={product.material} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: product info */}
-          <div style={{ paddingTop: 8 }}>
-            <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#8C7355", marginBottom: 14 }}>
-              {product.category}
-            </div>
-            <h1 style={{
-              fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px, 3.5vw, 42px)",
-              fontWeight: 400, lineHeight: 1.15, margin: "0 0 10px",
-            }}>
-              {product.name}
-            </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: swatch(product.material), border: "1px solid #E8E2D9" }} />
-              <span style={{ fontSize: 12, color: "#B8AFA2", letterSpacing: "0.06em" }}>{product.material}</span>
-              {product.tag && <span style={{ marginLeft: 4 }}><Tag label={product.tag} /></span>}
-            </div>
-
-            {/* Long description */}
-            <div style={{ marginBottom: 36 }}>
-              {product.longDescription.split("\n\n").map((para, i) => (
-                <p key={i} style={{ fontSize: 14, color: "#555", lineHeight: 1.8, margin: "0 0 16px", fontStyle: i === 0 ? "italic" : "normal" }}>
-                  {para}
-                </p>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div style={{ borderTop: "1px solid #E8E2D9", paddingTop: 28, marginBottom: 28 }}>
-
-              {/* Dimensions */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 12 }}>
-                  Dimensions
-                </div>
-                <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-                  {[["Width", product.w], ["Height", product.h], ["Depth", product.d]].map(([l, v]) => (
-                    <div key={l}>
-                      <div style={{ fontSize: 20, fontFamily: "'DM Serif Display', serif", color: "#2C2C2C" }}>{v}<span style={{ fontSize: 12, marginLeft: 2 }}>cm</span></div>
-                      <div style={{ fontSize: 10, color: "#B8AFA2", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>{l}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Finishes */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
-                  Available Finishes
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {product.finishes.map(f => (
-                    <div key={f} style={{
-                      border: "1px solid #E8E2D9", padding: "5px 12px",
-                      fontSize: 11, color: "#2C2C2C", letterSpacing: "0.04em",
-                    }}>{f}</div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Lead time */}
-              <div style={{ marginBottom: 28 }}>
-                <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 6 }}>
-                  Lead time
-                </div>
-                <div style={{ fontSize: 13, color: "#2C2C2C" }}>{product.lead}</div>
-              </div>
-
-              {/* Care */}
-              <div style={{ marginBottom: 32 }}>
-                <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 6 }}>
-                  Care
-                </div>
-                <div style={{ fontSize: 12, color: "#888", lineHeight: 1.7 }}>{product.care}</div>
-              </div>
-
-              {/* CTA */}
-              <button style={{
-                width: "100%", background: "#2C2C2C", border: "none",
-                color: "#F7F5F0", fontSize: 11, letterSpacing: "0.16em",
-                textTransform: "uppercase", padding: "15px 0",
-                cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-                transition: "background 0.18s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = "#8C7355"}
-                onMouseLeave={e => e.currentTarget.style.background = "#2C2C2C"}
-              >
-                Enquire about this piece
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom: also from this category */}
-        <div>
-          <div style={{ borderTop: "1px solid #E8E2D9", paddingTop: 40, marginBottom: 28 }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#B8AFA2" }}>
-              Also in {product.category}
-            </div>
-          </div>
-          <div className="sh-related-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-            {PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3).map(p => (
-              <ProductCard key={p.id} product={p} onOpen={onBack_then => {}} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <footer className="sh-footer" style={{
-        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontSize: 11, letterSpacing: "0.08em", color: "#B8AFA2", textTransform: "uppercase",
-      }}>
-        <span>© 2026 Sahem Hromos — Skopje</span>
-        <span>Made slowly. Made to last.</span>
-      </footer>
-    </div>
-  );
-}
-
-/* ── Sidebar label ── */
-function FilterLabel({ children }) {
-  return (
-    <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10, marginTop: 24 }}>
+    <div className="sh-spec">
+      <div className="sh-label">{label}</div>
       {children}
     </div>
   );
 }
 
-/* ── Main catalogue page ── */
-function CataloguePage({ onOpen, onNavigate }) {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [activeMaterial, setActiveMaterial] = useState("All");
+function SiteNav({ page, onNavigate }) {
+  const [open, setOpen] = useState(false);
+  const burgerRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") { setOpen(false); burgerRef.current?.focus(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const go = (id) => { setOpen(false); onNavigate(id); };
+
+  return (
+    <header className="sh-nav">
+      {open && <div className="sh-scrim" onClick={() => setOpen(false)} aria-hidden="true" />}
+      <nav className="sh-nav-inner" aria-label="Main">
+        <button className="sh-logo" onClick={() => go("catalogue")} aria-label="Sahem Hromos — home">
+          <img src={logo} alt="Sahem Hromos" />
+        </button>
+        <button
+          ref={burgerRef}
+          className="sh-burger"
+          aria-expanded={open}
+          aria-controls="sh-links"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen(o => !o)}
+        >
+          <span /><span />
+        </button>
+        <div id="sh-links" className={`sh-links${open ? " is-open" : ""}`}>
+          {NAV_ITEMS.map(([id, label]) => (
+            <button
+              key={id}
+              className="sh-link"
+              aria-current={page === id ? "page" : undefined}
+              onClick={() => go(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="sh-footer">
+      <span>© 2026 Sahem Hromos — Skopje</span>
+      <span>Made slowly. Made to last.</span>
+    </footer>
+  );
+}
+
+function Layout({ page, onNavigate, children }) {
+  return (
+    <div className="sh-app">
+      <a className="sh-skip" href="#main">Skip to content</a>
+      <SiteNav page={page} onNavigate={onNavigate} />
+      <main id="main" className="sh-main">{children}</main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+/* ─────────────────────────── Product card ─────────────────────────── */
+
+function ProductCard({ product, onOpen }) {
+  const dims = [["W", product.w], ["H", product.h], ["D", product.d]].filter(([, v]) => v != null && v !== "");
+  return (
+    <article className="sh-card">
+      <div className="sh-card-media" onClick={() => onOpen(product)}>
+        <SmartImage src={getCardImage(product)} alt={product.name} />
+        {(product.description || dims.length > 0) && (
+          <div className="sh-card-hover" aria-hidden="true">
+            {product.description && <p>{product.description}</p>}
+            {dims.length > 0 && (
+              <div className="sh-dims">
+                {dims.map(([l, v]) => (
+                  <div className="sh-dim" key={l}><b>{v}</b><span>{l} cm</span></div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="sh-card-foot">
+        <div className="sh-card-top">
+          <div>
+            <h3 className="sh-card-name">{product.name}</h3>
+            {product.material && (
+              <div className="sh-mat">
+                <span className="sh-dot" style={{ background: swatch(product.material) }} />
+                <span>{product.material}</span>
+              </div>
+            )}
+          </div>
+          {product.tag && <Tag label={product.tag} />}
+        </div>
+        <button
+          className="sh-btn sh-btn-ghost"
+          onClick={() => onOpen(product)}
+          aria-label={`See more: ${product.name}`}
+        >
+          See more
+        </button>
+      </div>
+    </article>
+  );
+}
+
+/* ─────────────────────────── Product gallery ─────────────────────────── */
+
+function Gallery({ product }) {
+  const allViews = useMemo(() => getViews(product), [product]);
+  const [failed, setFailed] = useState([]);
+  const [active, setActive] = useState(0);
+
+  const views = useMemo(() => allViews.filter(v => !failed.includes(v.src)), [allViews, failed]);
+  const index = Math.min(active, Math.max(views.length - 1, 0));
+  const current = views[index];
+
+  const step = (dir) => setActive((index + dir + views.length) % views.length);
+  const onKeyDown = (e) => {
+    if (views.length < 2) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+  };
+  const markFailed = useCallback((src) => setFailed(f => (f.includes(src) ? f : [...f, src])), []);
+
+  return (
+    <div onKeyDown={onKeyDown}>
+      <div className="sh-stage" aria-live="polite">
+        {current ? (
+          <img
+            key={current.src}
+            src={current.src}
+            alt={`${product.name} — ${current.label}`}
+            onError={() => markFailed(current.src)}
+          />
+        ) : (
+          <div className="sh-img-fallback">Photography coming soon</div>
+        )}
+      </div>
+
+      {views.length > 1 && (
+        <div className="sh-gallery-bar">
+          <button className="sh-arrow" onClick={() => step(-1)} aria-label="Previous image">←</button>
+          <div className="sh-thumbs">
+            {views.map((v, i) => (
+              <button
+                key={v.src}
+                className="sh-thumb"
+                aria-current={i === index}
+                aria-label={`Show ${v.label} (${i + 1} of ${views.length})`}
+                onClick={() => setActive(i)}
+              >
+                <img src={v.src} alt="" loading="lazy" onError={() => markFailed(v.src)} />
+              </button>
+            ))}
+          </div>
+          <button className="sh-arrow" onClick={() => step(1)} aria-label="Next image">→</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────── Detail page ─────────────────────────── */
+
+function DetailPage({ product, onBack, onOpen }) {
+  const paragraphs = (product.longDescription || product.description || "").split("\n\n").filter(Boolean);
+  const dims = [["Width", product.w], ["Height", product.h], ["Depth", product.d]].filter(([, v]) => v != null && v !== "");
+  const finishes = Array.isArray(product.finishes) ? product.finishes : [];
+  const related = useMemo(
+    () => PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3),
+    [product]
+  );
+  const enquiry = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Enquiry: ${product.name}`)}`;
+
+  return (
+    <>
+      <div className="sh-wrap">
+        <button className="sh-back" onClick={onBack}>← Catalogue</button>
+      </div>
+
+      <div className="sh-wrap sh-detail">
+        <Gallery key={product.id} product={product} />
+
+        <div className="sh-info">
+          {product.category && <p className="sh-eyebrow" style={{ marginBottom: 14 }}>{product.category}</p>}
+          <h1 className="sh-title">{product.name}</h1>
+          <div className="sh-mat">
+            {product.material && (
+              <>
+                <span className="sh-dot" style={{ background: swatch(product.material) }} />
+                <span>{product.material}</span>
+              </>
+            )}
+            {product.tag && <span style={{ marginLeft: 6 }}><Tag label={product.tag} /></span>}
+          </div>
+
+          <div className="sh-prose">
+            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
+          </div>
+
+          <div className="sh-specs">
+            {dims.length > 0 && (
+              <Spec label="Dimensions">
+                <div className="sh-dims-lg">
+                  {dims.map(([l, v]) => (
+                    <div key={l}><b>{v}<small>cm</small></b><span>{l}</span></div>
+                  ))}
+                </div>
+              </Spec>
+            )}
+            {finishes.length > 0 && (
+              <Spec label="Available finishes">
+                <div className="sh-chips">
+                  {finishes.map(f => <span className="sh-chip" key={f}>{f}</span>)}
+                </div>
+              </Spec>
+            )}
+            {product.lead && (
+              <Spec label="Lead time"><p className="sh-spec-text sh-spec-strong">{product.lead}</p></Spec>
+            )}
+            {(product.material || product.frame) && (
+              <Spec label="Material">
+                {product.material && <p className="sh-spec-text">{product.material}</p>}
+                {product.frame && <p className="sh-spec-text">{cap(product.frame)} frame</p>}
+              </Spec>
+            )}
+            {product.fabric && (
+              <Spec label="Fabric"><p className="sh-spec-text">{cap(product.fabric)}</p></Spec>
+            )}
+            {product.care && (
+              <Spec label="Care"><p className="sh-spec-text">{product.care}</p></Spec>
+            )}
+            <a className="sh-btn sh-btn-block" href={enquiry}>Enquire about this piece</a>
+          </div>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <section className="sh-wrap sh-related" aria-labelledby="related-title">
+          <h2 id="related-title" className="sh-label" style={{ marginBottom: 28 }}>Also in {product.category}</h2>
+          <div className="sh-grid">
+            {related.map(p => <ProductCard key={p.id} product={p} onOpen={onOpen} />)}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+/* ─────────────────────────── Catalogue ─────────────────────────── */
+
+function CataloguePage({ onOpen }) {
+  const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Featured");
   const [search, setSearch] = useState("");
 
-  const filtered = useMemo(() => {
-    let list = [...PRODUCTS];
-    if (activeCategory !== "All") list = list.filter(p => p.category === activeCategory);
-    if (activeMaterial !== "All") list = list.filter(p => p.material.includes(activeMaterial));
-    if (search) list = list.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-    if (sortBy === "Name A–Z") list.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortBy === "Category") list.sort((a, b) => a.category.localeCompare(b.category));
-    return list;
-  }, [activeCategory, activeMaterial, sortBy, search]);
+  const featured = useMemo(() => PRODUCTS.find(p => getCardImage(p)), []);
 
-  const pillStyle = (active) => ({
-    padding: "5px 14px", fontSize: 11, cursor: "pointer",
-    border: `1px solid ${active ? "#2C2C2C" : "#E8E2D9"}`,
-    background: active ? "#2C2C2C" : "transparent",
-    color: active ? "#F7F5F0" : "#B8AFA2",
-    letterSpacing: "0.04em", transition: "all 0.18s", whiteSpace: "nowrap",
-    fontFamily: "'DM Sans', sans-serif",
-  });
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = PRODUCTS.filter(p =>
+      (category === "All" || p.category === category) &&
+      (!q || p.name.toLowerCase().includes(q))
+    );
+    if (sortBy === "Name A–Z") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === "Category") list = [...list].sort((a, b) => a.category.localeCompare(b.category));
+    return list;
+  }, [category, sortBy, search]);
+
+  const reset = () => { setCategory("All"); setSearch(""); setSortBy("Featured"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-      <GlobalStyles />
-
-      {/* NAV */}
-      <nav className="sh-nav-cat" style={{
-        display: "flex", alignItems: "center", justifyContent: "flex-start",
-        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
-        position: "sticky", top: 0,
-        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
-      }}>
-        <img
-          src={logo}
-          alt="Sahem Hromos"
-          style={{
-          height: 70,//change 
-          width: "auto",
-          maxWidth: "60vw",
-          display: "block",
-          }}/>
-        <div className="sh-nav-links" style={{ display: "flex", gap: 36, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", justifyContent:"flex-start", paddingLeft:"50px" }}>
-          {["Catalogue", "Gallery", "About", "Contact"].map(item => (
-            <span
-              key={item}
-              onClick={() => {
-                if (item === "Catalogue") onNavigate("catalogue");
-                if (item === "Gallery") onNavigate("gallery");
-                if (item === "About") onNavigate("about");
-                if (item === "Contact") onNavigate("contact");
-              }}
-              style={{
-                cursor: "pointer",
-                color: item === "Catalogue" ? "#8C7355" : "#B8AFA2",
-                transition: "color 0.18s",
-                borderBottom: item === "Catalogue" ? "1px solid #8C7355" : "1px solid transparent",
-                paddingBottom: 2,
-              }}
-              onMouseEnter={e => e.currentTarget.style.color = "#2C2C2C"}
-              onMouseLeave={e => e.currentTarget.style.color = item === "Catalogue" ? "#8C7355" : "#B8AFA2"}
-            >
-              {item}
-            </span>
-          ))}
+    <>
+      <section className="sh-hero">
+        <div className="sh-hero-copy">
+          <p className="sh-eyebrow">Spring — Summer 2026</p>
+          <h1 className="sh-h1">Sahem Hromos</h1>
+          <p className="sh-lead">
+            Solid woods, natural textiles, honest construction. Each piece designed for daily use and a lifetime of ownership.
+          </p>
+          <a className="sh-btn sh-btn-arrow" href="#collection">View the catalogue<span aria-hidden="true">→</span></a>
         </div>
-        <div className="sh-nav-spacer" style={{ width: 80 }} />
-      </nav>
+        {featured && (
+          <div className="sh-hero-media">
+            <SmartImage src={getCardImage(featured)} alt={featured.name} loading="eager" />
+          </div>
+        )}
+      </section>
 
-      {/* HERO */}
-      <div
-        className="sh-hero"
-        style={{
-          padding: "100px 48px 56px",
-          borderBottom: "1px solid #E8E2D9",
-          position: "relative",
-          overflow: "hidden",
-          }}>
-
-  {/* TEXT LAYER */}
-  <div style={{ position: "relative", zIndex: 2, maxWidth: 560 }}>
-    <div
-      style={{
-        fontSize: 10,
-        letterSpacing: "0.22em",
-        textTransform: "uppercase",
-        color: "#8C7355",
-        marginBottom: 20,
-      }}
-    >
-      Spring — Summer 2026
-    </div>
-
-    <h1
-      style={{
-        fontFamily: "'Playfair Display', serif",
-        fontSize: "clamp(38px, 9vw, 80px)",
-        fontWeight: 400,
-        lineHeight: 1.15,
-        margin: "0 0 20px",
-      }}
-    >
-      Sahem Hromos
-    </h1>
-
-    <p
-      style={{
-        fontSize: 14,
-        color: "#B8AFA2",
-        lineHeight: 1.75,
-        margin: 0,
-        maxWidth: 400,
-      }}
-    >
-      Solid woods, natural textiles, honest construction. Each piece designed for daily use and a lifetime of ownership.
-    </p>
-  </div>
-</div>
-
-      {/* LAYOUT */}
-      <div className="sh-layout" style={{ display: "flex" }}>
-        {/* SIDEBAR */}
-        <aside className="sh-sidebar" style={{
-          width: 220, flexShrink: 0, padding: "32px 28px",
-          borderRight: "1px solid #E8E2D9",
-          minHeight: "calc(100vh - 60px)",
-          position: "sticky", top: 60, alignSelf: "flex-start",
-          background: "#F7F5F0",
-        }}>
+      <div className="sh-cat" id="collection">
+        <aside className="sh-sidebar" aria-label="Filters">
+          <label className="sh-label" htmlFor="search" style={{ display: "block" }}>Search</label>
           <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search…"
-            style={{
-              width: "160px", boxSizing: "border-box",
-              background: "#FFFFFF", border: "1px solid #E8E2D9",
-              fontSize: 13, padding: "8px 12px", outline: "none",
-              fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C",
-            }}
+            id="search"
+            className="sh-search"
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name"
           />
-          <FilterLabel>Category</FilterLabel>
-          {CATEGORIES.map(cat => (
-            <div key={cat} onClick={() => setActiveCategory(cat)} style={{
-              fontSize: 13, padding: "6px 0", cursor: "pointer",
-              color: activeCategory === cat ? "#2C2C2C" : "#B8AFA2",
-              fontWeight: activeCategory === cat ? 500 : 400,
-              transition: "color 0.15s",
-            }}>{cat}</div>
-          ))}
+          <div className="sh-label" style={{ marginTop: 28 }}>Category</div>
+          <div className="sh-cats">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                className="sh-cat-btn"
+                aria-pressed={category === cat}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </aside>
 
-        {/* MAIN */}
-        <main className="sh-main-padding" style={{ flex: 1, padding: "28px 36px", minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-            <span style={{ fontSize: 12, color: "#B8AFA2" }}>
-              <span style={{ color: "#2C2C2C" }}>{filtered.length}</span> pieces
+        <section className="sh-results" aria-label="Products">
+          <div className="sh-toolbar">
+            <span className="sh-count" role="status">
+              <b>{filtered.length}</b> {filtered.length === 1 ? "piece" : "pieces"}
             </span>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {SORT_OPT.map(opt => (
-                <button key={opt} onClick={() => setSortBy(opt)} style={pillStyle(sortBy === opt)}>{opt}</button>
+            <div className="sh-pills" role="group" aria-label="Sort by">
+              {SORT_OPTIONS.map(opt => (
+                <button key={opt} className="sh-pill" aria-pressed={sortBy === opt} onClick={() => setSortBy(opt)}>
+                  {opt}
+                </button>
               ))}
             </div>
           </div>
 
           {filtered.length === 0 ? (
-            <div style={{ padding: "80px 0", textAlign: "center", color: "#B8AFA2", fontSize: 14, fontStyle: "italic" }}>
-              No pieces match your filters.
+            <div className="sh-empty">
+              <p>No pieces match your search.</p>
+              <button className="sh-btn" onClick={reset}>Clear filters</button>
             </div>
           ) : (
-            <div className="sh-product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+            <div className="sh-grid">
               {filtered.map(p => <ProductCard key={p.id} product={p} onOpen={onOpen} />)}
             </div>
           )}
-        </main>
+        </section>
       </div>
-
-      <footer className="sh-footer" style={{
-        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontSize: 11, letterSpacing: "0.08em", color: "#B8AFA2", textTransform: "uppercase",
-      }}>
-        <span>© 2026 Sahem Hromos — Gostivar</span>
-        <span>Made slowly. Made to last.</span>
-      </footer>
-    </div>
+    </>
   );
 }
 
-function GalleryPage({ onNavigate, onOpen }) {
-  const [hoveredId, setHoveredId] = useState(null);
+/* ─────────────────────────── Materials ─────────────────────────── */
+
+function MaterialsPage({ onNavigate }) {
+  const counts = useMemo(() => {
+    const result = {};
+    MATERIALS.forEach(m => {
+      result[m.name] = PRODUCTS.filter(p =>
+        Array.isArray(p.finishes) && p.finishes.some(f => String(f).toLowerCase() === m.name.toLowerCase())
+      ).length;
+    });
+    return result;
+  }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-      <GlobalStyles />
+    <>
+      <div className="sh-wrap sh-page-head">
+        <p className="sh-eyebrow">Materials</p>
+        <h1 className="sh-h1" style={{ maxWidth: 700 }}>Honest materials, finished by hand</h1>
+        <p className="sh-lead">Our frames are made from solid regional hardwood. These are the finishes you can choose from.</p>
+      </div>
 
-      {/* Navbar */}
-      <nav className="sh-nav-cat" style={{
-        display: "flex", alignItems: "center", justifyContent: "flex-start",
-        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
-        position: "sticky", top: 0,
-        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
-      }}>
-        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
-        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
-          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>Gallery</span>
-          <span onClick={() => onNavigate("about")} style={{ cursor: "pointer", color: "#B8AFA2" }}>About</span>
-          <span onClick={() => onNavigate("contact")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Contact</span>
-        </div>
-      </nav>
+      <div className="sh-wrap sh-mat-grid">
+        {MATERIALS.map(m => (
+          <figure className="sh-mat-card" key={m.name}>
+            <div className="sh-mat-img"><SmartImage src={m.image} alt={`${m.name} finish sample`} /></div>
+            <figcaption>
+              <h2>{m.name}</h2>
+              <p>{m.note}</p>
+              {counts[m.name] > 0 && (
+                <span className="sh-count">Available on {counts[m.name]} {counts[m.name] === 1 ? "piece" : "pieces"}</span>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
 
-      {/* Hero */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
-        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
-          Gallery
-        </div>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
-          A closer look
-        </h1>
-        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 560, marginBottom: 60 }}>
-          Every piece, photographed in the workshop. Click through to see materials,
-          dimensions, and finishes for anything that catches your eye.
+      <div className="sh-wrap sh-cta">
+        <button className="sh-btn" onClick={() => onNavigate("catalogue")}>Browse the catalogue</button>
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────── About ─────────────────────────── */
+
+const VALUES = [
+  { title: "Solid Wood, Always", text: "No veneers, no particleboard shortcuts. Every frame is cut from solid oak, beech, walnut, or ash." },
+  { title: "Made By Hand", text: "Our joinery is done in small batches by craftsmen who've worked the same workshop floor for decades." },
+  { title: "Built To Outlive Trends", text: "We design for the next twenty years, not the next season. Quiet forms, honest materials." },
+];
+
+function AboutPage({ onNavigate }) {
+  return (
+    <>
+      <div className="sh-wrap sh-page-head">
+        <p className="sh-eyebrow">About us</p>
+        <h1 className="sh-h1" style={{ maxWidth: 700 }}>Furniture made the slow way</h1>
+        <p className="sh-lead" style={{ maxWidth: 620 }}>
+          Sahem Hromos began as a small joinery workshop between Skopje and Gostivar, built on one idea: furniture should be made from real materials, by real hands, to be used for a lifetime — not replaced every few years. That idea hasn't changed since.
         </p>
       </div>
 
-      {/* Photo grid */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px" }}>
-        <div
-          className="sh-product-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}
-        >
-          {PRODUCTS.map(p => (
-            <div
-              key={p.id}
-              onMouseEnter={() => setHoveredId(p.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onClick={() => onOpen(p)}
-              style={{
-                position: "relative", height: 340, background: "#fff",
-                border: "1px solid #E8E2D9", overflow: "hidden", cursor: "pointer",
-              }}
-            >
-              <img
-                src={p.images}
-                alt={p.name}
-                style={{
-                  width: "100%", height: "100%", objectFit: "cover",
-                  transform: hoveredId === p.id ? "scale(1.05)" : "scale(1)",
-                  transition: "transform 0.4s ease",
-                }}
-              />
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to top, rgba(44,44,44,0.75), rgba(44,44,44,0) 50%)",
-                opacity: hoveredId === p.id ? 1 : 0,
-                transition: "opacity 0.25s ease",
-                display: "flex", alignItems: "flex-end", padding: 20,
-              }}>
-                <div>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", color: "#F7F5F0", fontSize: 18, marginBottom: 4 }}>
-                    {p.name}
-                  </div>
-                  <div style={{ color: "#E8E2D9", fontSize: 11, letterSpacing: "0.06em" }}>
-                    {p.category} · {p.material}
-                  </div>
-                </div>
-              </div>
+      <div className="sh-wrap sh-story">
+        <div>
+          <h2 className="sh-label">Our story</h2>
+          <p>What started as a two-person workshop has grown into a small team of joiners, upholsterers, and finishers — but the process hasn't changed. Every chair, sofa, and bench still passes through the same hands from rough timber to finished piece.</p>
+          <p>We work almost entirely with solid regional hardwoods — oak, beech, ash, walnut — and natural upholstery textiles like bouclé and chenille, chosen for how they age, not just how they photograph.</p>
+        </div>
+        <div>
+          <h2 className="sh-label">Where we work</h2>
+          <p>Our workshop sits in Gostivar, where frames are cut, joined, and sanded by hand. Final assembly and finishing happen at our Skopje studio, where every piece is checked before it ships.</p>
+          <p>Because we make in small batches, lead times are longer than mass-produced furniture — usually a few weeks. We think that's a fair trade for something built to last decades.</p>
+        </div>
+      </div>
+
+      <section className="sh-wrap sh-values" aria-labelledby="values-title">
+        <h2 id="values-title" className="sh-label">What we believe</h2>
+        <div className="sh-values-grid">
+          {VALUES.map(v => (
+            <div className="sh-value" key={v.title}>
+              <h3>{v.title}</h3>
+              <p>{v.text}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      <footer className="sh-footer" style={{
-        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
-        display: "flex", justifyContent: "space-between",
-        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
-      }}>
-        <span>© 2026 Sahem Hromos — Gostivar</span>
-        <span>Made slowly. Made to last.</span>
-      </footer>
-    </div>
+      <div className="sh-wrap sh-cta">
+        <button className="sh-btn" onClick={() => onNavigate("catalogue")}>Browse the catalogue</button>
+      </div>
+    </>
   );
 }
 
-function AboutUs({ onNavigate }) {
-  const values = [
-    {
-      title: "Solid Wood, Always",
-      text: "No veneers, no particleboard shortcuts. Every frame is cut from solid oak, beech, walnut, or ash.",
-    },
-    {
-      title: "Made By Hand",
-      text: "Our joinery is done in small batches by craftsmen who've worked the same workshop floor for decades.",
-    },
-    {
-      title: "Built To Outlive Trends",
-      text: "We design for the next twenty years, not the next season. Quiet forms, honest materials.",
-    },
-  ];
+/* ─────────────────────────── Contact ─────────────────────────── */
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-      <GlobalStyles />
-
-      {/* Navbar */}
-      <nav className="sh-nav-cat" style={{
-        display: "flex", alignItems: "center", justifyContent: "flex-start",
-        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
-        position: "sticky", top: 0,
-        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
-      }}>
-        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
-        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
-          <span onClick={() => onNavigate("materials")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Materials</span>
-          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>About</span>
-          <span onClick={() => onNavigate("contact")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Contact</span>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
-        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
-          About Us
-        </div>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
-          Furniture made the slow way
-        </h1>
-        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 620, marginBottom: 80 }}>
-          Sahem Hromos began as a small joinery workshop between Skopje and Gostivar, built on
-          one idea: furniture should be made from real materials, by real hands, to be used for
-          a lifetime — not replaced every few years. That idea hasn't changed since.
-        </p>
-      </div>
-
-      {/* Story section */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 80px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }} className="sh-detail-grid">
-        <div>
-          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 14 }}>
-            Our Story
-          </div>
-          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9, marginBottom: 20 }}>
-            What started as a two-person workshop has grown into a small team of joiners,
-            upholsterers, and finishers — but the process hasn't changed. Every chair, sofa,
-            and bench still passes through the same hands from rough timber to finished piece.
-          </p>
-          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }}>
-            We work almost entirely with solid regional hardwoods — oak, beech, ash, walnut —
-            and natural upholstery textiles like bouclé and chenille, chosen for how they age,
-            not just how they photograph.
-          </p>
-        </div>
-        <div>
-          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 14 }}>
-            Where We Work
-          </div>
-          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9, marginBottom: 20 }}>
-            Our workshop sits in Gostivar, where frames are cut, joined, and sanded by hand.
-            Final assembly and finishing happen at our Skopje studio, where every piece is
-            checked before it ships.
-          </p>
-          <p style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }}>
-            Because we make in small batches, lead times are longer than mass-produced
-            furniture — usually a few weeks. We think that's a fair trade for something built
-            to last decades.
-          </p>
-        </div>
-      </div>
-
-      {/* Values */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px" }}>
-        <div style={{ borderTop: "1px solid #E8E2D9", paddingTop: 48, marginBottom: 40 }}>
-          <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2" }}>
-            What We Believe
-          </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 28 }}>
-          {values.map(v => (
-            <div key={v.title} style={{ background: "#fff", border: "1px solid #E8E2D9", padding: 30 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: 20, marginBottom: 14 }}>
-                {v.title}
-              </h2>
-              <p style={{ color: "#666", lineHeight: 1.8, fontSize: 14 }}>
-                {v.text}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px", textAlign: "center" }}>
-        <button
-          onClick={() => onNavigate("catalogue")}
-          style={{
-            background: "#2C2C2C", border: "none", color: "#F7F5F0",
-            fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase",
-            padding: "16px 40px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-            transition: "background 0.18s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = "#8C7355"}
-          onMouseLeave={e => e.currentTarget.style.background = "#2C2C2C"}
-        >
-          Browse the catalogue
-        </button>
-      </div>
-
-      <footer className="sh-footer" style={{
-        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
-        display: "flex", justifyContent: "space-between",
-        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
-      }}>
-        <span>© 2026 Sahem Hromos — Gostivar</span>
-        <span>Made slowly. Made to last.</span>
-      </footer>
-    </div>
-  );
-}
-
-function ContactUs({ onNavigate }) {
+function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
 
   const update = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
 
-  const inputStyle = {
-    width: "100%", boxSizing: "border-box",
-    background: "#fff", border: "1px solid #E8E2D9",
-    fontSize: 14, padding: "12px 14px", outline: "none",
-    fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C",
-    marginBottom: 20,
-  };
-
-  const label = {
-    fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
-    color: "#B8AFA2", marginBottom: 8, display: "block",
-  };
-
-  const handleSubmit = () => {
-    if (!form.name || !form.email || !form.message) return;
+  /* There is no server endpoint, so the form hands the message to the
+     visitor's email app instead of pretending it was delivered. */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      setError("Please fill in your name, email and message.");
+      return;
+    }
+    setError("");
+    const subject = encodeURIComponent(`Message from ${form.name.trim()}`);
+    const body = encodeURIComponent(`${form.message.trim()}\n\n— ${form.name.trim()} (${form.email.trim()})`);
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
     setSent(true);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F5F0", fontFamily: "'DM Sans', sans-serif", color: "#2C2C2C" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-      <GlobalStyles />
-
-      {/* Navbar */}
-      <nav className="sh-nav-cat" style={{
-        display: "flex", alignItems: "center", justifyContent: "flex-start",
-        padding: "0 48px", height: 90, borderBottom: "1px solid #E8E2D9",
-        position: "sticky", top: 0,
-        background: "rgba(247,245,240,0.96)", backdropFilter: "blur(8px)", zIndex: 100,
-      }}>
-        <img src={logo} alt="Sahem" style={{ height: 70, width: "auto", display: "block" }} />
-        <div className="sh-nav-links" style={{ display: "flex", gap: 36, paddingLeft: 50, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          <span onClick={() => onNavigate("catalogue")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Catalogue</span>
-          <span onClick={() => onNavigate("materials")} style={{ cursor: "pointer", color: "#B8AFA2" }}>Materials</span>
-          <span onClick={() => onNavigate("about")} style={{ cursor: "pointer", color: "#B8AFA2" }}>About</span>
-          <span style={{ color: "#8C7355", borderBottom: "1px solid #8C7355", paddingBottom: 2 }}>Contact</span>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "90px 48px 0" }}>
-        <div style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase", color: "#8C7355", marginBottom: 18 }}>
-          Get In Touch
-        </div>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: "clamp(42px,7vw,72px)", marginBottom: 28, maxWidth: 700, lineHeight: 1.1 }}>
-          Let's talk furniture
-        </h1>
-        <p style={{ fontSize: 15, color: "#666", lineHeight: 1.9, maxWidth: 560, marginBottom: 70 }}>
-          Questions about a piece, custom sizing, materials, or an order — send us a note and
-          we'll get back to you within a couple of days.
-        </p>
+    <>
+      <div className="sh-wrap sh-page-head">
+        <p className="sh-eyebrow">Get in touch</p>
+        <h1 className="sh-h1" style={{ maxWidth: 700 }}>Let's talk furniture</h1>
+        <p className="sh-lead">Questions about a piece, custom sizing, materials, or an order — send us a note and we'll get back to you within a couple of days.</p>
       </div>
 
-      {/* Content: form + details */}
-      <div
-        className="sh-detail-grid"
-        style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 100px", display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 64 }}
-      >
-        {/* Form */}
-        <div style={{ background: "#fff", border: "1px solid #E8E2D9", padding: 40 }}>
+      <div className="sh-wrap sh-contact">
+        <div className="sh-form">
           {sent ? (
-            <div style={{ padding: "40px 0", textAlign: "center" }}>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, marginBottom: 12 }}>
-                Thank you.
-              </div>
-              <p style={{ color: "#666", fontSize: 14, lineHeight: 1.8 }}>
-                Your message has been received. We'll be in touch soon.
-              </p>
+            <div className="sh-sent" role="status">
+              <h2>Your email is ready.</h2>
+              <p>Your email app should have opened with your message. If it didn't, write to us at {CONTACT_EMAIL}.</p>
             </div>
           ) : (
-            <div>
-              <div>
-                <label style={label}>Name</label>
-                <input
-                  style={inputStyle}
-                  value={form.name}
-                  onChange={update("name")}
-                  placeholder="Your full name"
-                />
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="sh-field">
+                <label htmlFor="c-name">Name</label>
+                <input id="c-name" className="sh-input" autoComplete="name" required value={form.name} onChange={update("name")} placeholder="Your full name" />
               </div>
-              <div>
-                <label style={label}>Email</label>
-                <input
-                  style={inputStyle}
-                  type="email"
-                  value={form.email}
-                  onChange={update("email")}
-                  placeholder="you@example.com"
-                />
+              <div className="sh-field">
+                <label htmlFor="c-email">Email</label>
+                <input id="c-email" className="sh-input" type="email" autoComplete="email" required value={form.email} onChange={update("email")} placeholder="you@example.com" />
               </div>
-              <div>
-                <label style={label}>Message</label>
-                <textarea
-                  style={{ ...inputStyle, minHeight: 140, resize: "vertical", fontFamily: "'DM Sans', sans-serif" }}
-                  value={form.message}
-                  onChange={update("message")}
-                  placeholder="Tell us what you're looking for…"
-                />
+              <div className="sh-field">
+                <label htmlFor="c-message">Message</label>
+                <textarea id="c-message" className="sh-input" required value={form.message} onChange={update("message")} placeholder="Tell us what you're looking for…" />
               </div>
-              <button
-                onClick={handleSubmit}
-                style={{
-                  width: "100%", background: "#2C2C2C", border: "none",
-                  color: "#F7F5F0", fontSize: 11, letterSpacing: "0.16em",
-                  textTransform: "uppercase", padding: "15px 0",
-                  cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-                  transition: "background 0.18s",
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = "#8C7355"}
-                onMouseLeave={e => e.currentTarget.style.background = "#2C2C2C"}
-              >
-                Send message
-              </button>
-            </div>
+              {error && <p className="sh-error" role="alert">{error}</p>}
+              <button type="submit" className="sh-btn sh-btn-block">Send message</button>
+            </form>
           )}
         </div>
 
-        {/* Contact details */}
         <div>
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
-              Workshop
-            </div>
-            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Gostivar, North Macedonia</div>
-          </div>
-
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
-              Studio
-            </div>
-            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Skopje, North Macedonia</div>
-          </div>
-
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
-              Email
-            </div>
-            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>hello@sahemhromos.com</div>
-          </div>
-
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "#B8AFA2", marginBottom: 10 }}>
-              Response time
-            </div>
-            <div style={{ fontSize: 14, color: "#2C2C2C", lineHeight: 1.8 }}>Usually within 2 business days</div>
-          </div>
+          <div className="sh-detail-item"><div className="sh-label">Workshop</div><p>Gostivar, North Macedonia</p></div>
+          <div className="sh-detail-item"><div className="sh-label">Studio</div><p>Skopje, North Macedonia</p></div>
+          <div className="sh-detail-item"><div className="sh-label">Email</div><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p></div>
+          <div className="sh-detail-item"><div className="sh-label">Response time</div><p>Usually within 2 business days</p></div>
         </div>
       </div>
-
-      <footer className="sh-footer" style={{
-        borderTop: "1px solid #E8E2D9", padding: "28px 48px",
-        display: "flex", justifyContent: "space-between",
-        color: "#B8AFA2", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase",
-      }}>
-        <span>© 2026 Sahem Hromos — Gostivar</span>
-        <span>Made slowly. Made to last.</span>
-      </footer>
-    </div>
+    </>
   );
 }
-/* ── Root: page router ── */
+
+/* ─────────────────────────── Root / router ─────────────────────────── */
+
+const PAGE_TITLES = {
+  catalogue: "Sahem Hromos — Furniture",
+  materials: "Materials — Sahem Hromos",
+  about: "About — Sahem Hromos",
+  contact: "Contact — Sahem Hromos",
+};
+
+const safeHistory = (method, state) => {
+  try { window.history[method](state, "", window.location.href); } catch { /* history unavailable */ }
+};
+
 export default function App() {
-  const [page, setPage] = useState("catalogue");
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [route, setRoute] = useState({ page: "catalogue", productId: null });
 
-  if (selectedProduct) {
-    return (
-      <DetailPage
-        product={selectedProduct}
-        onBack={() => setSelectedProduct(null)}
-      />
-    );
-  }
+  // Fonts and global styles are loaded once for the whole app.
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap";
+    document.head.appendChild(link);
+    safeHistory("replaceState", { page: "catalogue", productId: null });
+    return () => link.remove();
+  }, []);
 
-  if (page === "gallery") {
-    return <GalleryPage onNavigate={setPage} onOpen={setSelectedProduct} />;
-  }
+  // Browser Back / Forward.
+  useEffect(() => {
+    const onPop = (e) => setRoute(e.state?.page ? e.state : { page: "catalogue", productId: null });
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
-  if (page === "about") {
-    return <AboutUs onNavigate={setPage} />;
-  }
+  const product = useMemo(
+    () => (route.productId != null ? PRODUCTS.find(p => p.id === route.productId) : null),
+    [route.productId]
+  );
 
-  if (page === "contact") {
-    return <ContactUs onNavigate={setPage} />;
-  }
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = product ? `${product.name} — Sahem Hromos` : PAGE_TITLES[route.page] || PAGE_TITLES.catalogue;
+  }, [route.page, product]);
+
+  const go = useCallback((next) => {
+    setRoute(current => {
+      if (current.page === next && current.productId == null) return current;
+      const state = { page: next, productId: null };
+      safeHistory("pushState", state);
+      return state;
+    });
+  }, []);
+
+  const openProduct = useCallback((p) => {
+    const state = { page: "catalogue", productId: p.id };
+    safeHistory("pushState", state);
+    setRoute(state);
+  }, []);
+
+  const back = useCallback(() => {
+    if (window.history.state?.productId != null) window.history.back();
+    else setRoute({ page: "catalogue", productId: null });
+  }, []);
+
+  let content;
+  if (product) content = <DetailPage product={product} onBack={back} onOpen={openProduct} />;
+  else if (route.page === "materials") content = <MaterialsPage onNavigate={go} />;
+  else if (route.page === "about") content = <AboutPage onNavigate={go} />;
+  else if (route.page === "contact") content = <ContactPage />;
+  else content = <CataloguePage onOpen={openProduct} />;
 
   return (
-    <CataloguePage
-      onOpen={setSelectedProduct}
-      onNavigate={setPage}
-    />
+    <>
+      <style>{STYLES}</style>
+      <Layout page={route.page} onNavigate={go}>{content}</Layout>
+    </>
   );
 }
