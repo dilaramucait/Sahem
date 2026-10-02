@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  # Prevent Create React App from failing the build on lint warnings
+  CI = "false"
+
+# Serve index.html for all client-side routes (React Router)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
